@@ -1,0 +1,122 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                        ;
+;      Assignment 1e  number transformation                              ;
+;                                                                        ;
+;      Yifei Pei  a1611648                                               ;
+;                                                                        ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+LIGHTS	.equ	16#FFFFFFF8
+SWITCHES .equ	16#FFFFFFFC
+
+result   .word   0
+mR1      .space  4
+
+         .start  main
+main
+         add     r3,r0,r0                ;make r3=0
+         lw      r1,SWITCHES             ;load SWITCHES to r1
+
+Loop     sgei    r4,r1,12                ;check z>=12?
+         bf      r4,L2                   ;if not, go to L2
+
+         sw      mR1,r1                  ;save r1
+
+         jal     isweird                 ;operate subroutine isweird
+         seqi    r1,r1,1                 ;check is z weird?
+         bf      r1,L1                   ;if not, go to L1
+         lw      r1,mR1                  ;restore r1
+         subi    r1,r1,1                 ;z--
+         addi    r3,r3,1                 ;result++
+
+L1       lw      r1,mR1                  ;restore r1
+         subi    r1,r1,1                 ;z--
+         j       Loop                    ;go through the loop
+
+L2       sw      result,r3               ;get result
+         sw      LIGHTS,r3               ;get LIGHTS
+
+         halt
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                       	    ;
+;       multiple   returns 1 (true)  if x is a multiple of y        ;
+;                                                          	    ;
+;       Entry   r1 = x                                              ;
+;		r2 = y                                              ;
+;               jal  multiple					    ;
+;                                                       	    ;
+;       Exit    r1 = multiple(x,y)				    ;
+;                                                                   ;
+;       Uses    r1, r2                                      	    ;
+;                                                       	    ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+ismultiple    .space  4
+
+
+multiple      sw     ismultiple,r3          ;save r3
+
+              seq    r3,r2,r0               ;check y=0?
+              bt     r3,L6                  ;if yes, go to L6
+
+L3            sge    r3,r1,r2               ;check x>=y?
+              bf     r3,L4                  ;if not, go to L4
+              sub    r1,r1,r2               ;if yes, x=x-y
+              j      L3                     ;go through the loop
+
+L4            seq    r3,r1,r0               ;check x=0?
+              bt     r3,L5                  ;if yes, go to L5
+              sub    r1,r1,r1               ;make r1=0
+              lw     r3,ismultiple          ;restore r3
+              jr     r31                    ;return 0
+
+L5            addi   r1,r1,1                ;make r1=1
+              lw     r3,ismultiple          ;restore r3
+              jr     r31                    ;return 1
+
+L6            sub    r1,r1,r1               ;make r1=0
+              lw     r3,ismultiple          ;restore r3
+              jr     r31                    ;return 0
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                       ;
+;       isweird     is the number wierd?   		;
+;                                                       ;
+;       Entry   r1= n                                   ;
+;               jal isweird                             ;
+;                                                       ;
+;       Exit    r1= isweird(n)	                        ;
+;                                                       ;
+;       Uses    r1                                      ;
+;                                                       ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+iwR1       .space  4
+isWeird    .space  4
+iwR31      .space  4
+
+isweird    sw      iwR1,r1             ;save r1
+           sw      isWeird,r4          ;save r4
+           sw      iwR31,r31           ;save r31
+           
+           addi    r2,r0,12            ;make y=12
+           jal     multiple            ;operate subroutine multiple
+           seqi    r4,r1,1             ;check ismultiple of 12?
+           bf      r4,L7               ;if not, go to L7
+
+           lw      r1,iwR1             ;restore r1
+           subi    r2,r2,3             ;make y=9
+           jal     multiple            ;operate subroutine multiple
+           seqi    r4,r1,0             ;check ismultiple of 9?
+           bf      r4,L7               ;if yes, go to L7
+
+           addi    r1,r1,1             ;make r1=1
+           lw      r4,isWeird          ;restore r4
+           lw      r31,iwR31           ;restore r31
+           jr      r31                 ;return 1
+
+L7         sub     r1,r1,r1            ;make r1=0
+           lw      r4,isWeird          ;restore r4
+           lw      r31,iwR31           ;restore r31
+           jr      r31                 ;return 0

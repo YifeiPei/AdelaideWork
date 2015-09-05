@@ -1,0 +1,21 @@
+	.start	init
+
+	.import	main
+
+
+	.seg	Code
+	.align	2
+
+init	lw	r14,stackPtr		;Init stack pointer
+	addui	r30,r0,0		;Init FP
+	j	main
+stackPtr .word	stackTop
+
+
+	.seg	Stack
+	.align	2
+
+stack	.space	1024
+stackTop
+
+

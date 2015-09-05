@@ -1,0 +1,340 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       String String handling library routines                               ;
+;                                                                             ;
+;       Written D Knight 14-May-2001                                          ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	.import	div
+	.import	get
+	.import	put
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       Global constant definitions                                           ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+ASCIICR	.equ	16#0D			;Carriage return
+ASCIILF	.equ	16#0A			;Line feed
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       strGet  Get a string from input                                       ;
+;                                                                             ;
+;       Entry   r1= ->Str                                                     ;
+;               r2= MaxLength                                                 ;
+;               jal strGet                                                    ;
+;                                                                             ;
+;       Exit    r1= ->Str                                                     ;
+;               r2= StrLength                                                 ;
+;                                                                             ;
+;       Note    Must have r2>0                                                ;
+;                                                                             ;
+;       Uses    r2                                                            ;
+;                                                                             ;
+;       Written D Knight 8-Mar-98                                             ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	.export	strGet
+
+	.seg	Code
+	.align	2
+
+strGetR3  .equ	0
+strGetR4  .equ	4
+strGetR31 .equ	8
+strGetPtr .equ	12
+strGetLen .equ	16
+strGetSiz .equ	20
+
+
+strGet:	subui	r14,r14,strGetSiz	;Allocate stack space
+
+	sw	strGetR3(r14),r3	;save registers
+	sw	strGetR4(r14),r4
+	sw	strGetR31(r14),r31
+
+	sw	strGetPtr(r14),r1	;Save parameters
+	sw	strGetLen(r14),r2
+	addui	r3,r1,0			;r3:= StrPtr
+	subui	r2,r2,1			;Save space for sentinel
+	beqz	r2,strGet2
+
+strGet1	jal	get			;Get a char
+	sb	(r3),r1			;Store it
+
+	sequi	r4,r1,ASCIICR		;CR?
+	bt	r4,strGet2		;Yes
+	sequi	r4,r1,ASCIILF		;LF?
+	bt	r4,strGet2		;Yes
+
+	jal	put			;Echo if not CR or LF
+	addi	r3,r3,1			;Inc StrPtr
+	subui	r2,r2,1			;Decr space remaining
+	bnez	r2,strGet1		;Loop if more
+
+strGet2	sb	(r3),r0			;Append sentinel
+
+	addi	r1,r0,ASCIICR		;Print CR
+	jal	put
+	addi	r1,r0,ASCIILF		;Print LF
+	jal	put
+
+	lw	r1,strGetLen(r14)		;Compute StrLength
+	sub	r2,r1,r2
+	lw	r1,strGetPtr(r14)
+
+	lw	r31,strGetR31(r14)	;Restore registers
+	lw	r4,strGetR4(r14)
+	lw	r3,strGetR3(r14)
+	addui	r14,r14,strGetSiz	;Deallocate storage
+
+	jr	r31			;return
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       strPut  Put a null-terminated string to the screen                    ;
+;                                                                             ;
+;       Entry   r1= ->Str                                                     ;
+;               jal strPut                                                    ;
+;                                                                             ;
+;       Uses    r1,r2                                                         ;
+;                                                                             ;
+;       Written D Knight 8-Mar-98                                             ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	.export	strPut
+
+	.seg	Code
+	.align	2
+
+strPutR31 .equ	0
+strPutSiz .equ	4
+
+strPut	subui	r14,r14,strPutSiz	;Allocate stack space
+	sw	strPutR31(r14),r31	;Save registers
+	
+	addui	r2,r1,0			;r2:= StrPtr
+	j	strPut2
+
+strPut1	jal	put			;Print the character
+	addui	r2,r2,1			;Inc StrPtr
+strPut2	lbu	r1,(r2)			;Get next char
+	bnez	r1,strPut1
+
+	lw	r31,strPutR31(r14)	;Restore registers
+	addui	r14,r14,strPutSiz	;Deallocate stack space
+	jr	r31
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       strToInt Convert numeric string to integer                            ;
+;                                                                             ;
+;               Accepts zero or more leading spaces, an optional plus or minus;
+;               sign, followed by at least one digit.  If this format is not  ;
+;               it returns -2**31, to indicate INVALID value.                 ;
+;               The string pointer is left pointing at the first character    ;
+;               after the number found in the string                          ;
+;                                                                             ;
+;       Entry   r2= ->Character string                                        ;
+;               r14= StackPointer                                             ;
+;		jal strToInt                                                  ;
+;                                                                             ;
+;       Exit    r1= Translated number                                         ;
+;               r2= ->Next char in string                                     ;
+;                                                                             ;
+;       Destroys r1,r2                                                        ;
+;                                                                             ;
+;       Written David Knight 22-May-97 revised 21May98                        ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	.export	strToInt
+
+	.seg	Code
+	.align	2
+
+strToIR3 .equ	0
+strToIR4 .equ	4
+strToISiz .equ	8
+
+strToInt:
+	subui	r14,r14,strToISiz	;Allocate stack space
+	sw	strToIR3(r14),r3	;Save registers	
+	sw	strToIR4(r14),r4
+
+;	Skip over leading spaces
+
+strToInt1
+	lb	r3,0(r2)		;R3:= next char
+	beqz	r3,strToInt8		;Jump if end-of-string
+
+        sequi   r4,r3," "		;Blank?
+        bf	r4,strToInt2    	;No
+
+	addui	r2,r2,1        		;Yes, skip it
+	j	strToInt1
+
+;	Check for leading + or - sign
+
+strToInt2
+	add	r4,r0,r0		;r4:=0
+	sequi	r1,r3,"+"		;Plus sign?
+	bnez	r1,strToInt3		;Yes
+
+	sequi	r1,r3,"-"		;Minus sign?
+	beqz	r1,strToInt5		;No
+	addui	r4,r0,16#100		;Yes, set Negative-flag
+strToInt3
+	add	r1,r0,r0		;Result:=0
+
+;	Digit loop
+
+strToInt4
+	addui	r2,r2,1			;Point to next char
+
+	lb	r3,0(r2)		;R3:= next char
+	beqz	r3,strToInt6		;Jump if end-of-string
+
+strToInt5
+	subui	r3,r3,"0"		;Legal digit?
+	sleui   r3,r3,9
+	bf	r3,strToInt6		;No
+
+	lb	r3,0(r2)		;R3:= digit
+	subui	r3,r3,"0"
+	addu	r3,r3,r1		;Num:= 10*Num+digit
+	addu	r3,r3,r1
+	slli	r1,r1,3
+	addu	r1,r1,r3
+
+	addui	r4,r4,1			;Inc Digit-count
+	j	strToInt4
+
+;	Check that the number had at least one digit
+
+strToInt6
+	andi	r3,r4,16#FF		;Digit-Count>0?
+	bf	r3,strToInt8		;No
+
+;	Attach appropriate sign
+
+	andi	r3,r4,16#100		;Negative-flag set?
+	bf	r3,strToInt7		;No
+
+	sub	r1,r0,r1		;Yes, negate result
+
+strToInt7
+	j	strToInt9
+
+;	Return ILLEGAL value
+
+strToInt8
+	lhi	r1,16#8000		;Return ILLEGAL
+
+;	Restore registers and exit
+
+strToInt9
+	lw	r4,strToIR4(r14)	;Restore registers
+	lw	r3,strToIR3(r14)
+	addui	r14,r14,strToISiz	;Deallocate stack
+	jr	r31			;And exit
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       intToStr Convert signed 32-bit integer to null-terminated string      ;
+;                                                                             ;
+;       Entry   r1= integer N                                                 ;
+;               r2= ->Str                                                     ;
+;               r14= StackPointer                                             ;
+;               jal intToStr                                                  ;
+;                                                                             ;
+;       Note    The string must be large enough to contain the digits of N    ;
+;                                                                             ;
+;       Uses    r1,r2                                                         ;
+;                                                                             ;
+;       Written D Knight 8-Mar-98                                             ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	.export	intToStr
+
+	.seg	Code
+	.align	2
+
+intTosR3 .equ	0
+intTosR4 .equ	4
+intTosR31 .equ	8
+intTosPtr .equ	12
+intTosSiz .equ	16
+
+intToStr
+	subui	r14,r14,intTosSiz	;Allocate stack space
+	sw	intTosR3(r14),r3	;Save registers
+	sw	intTosR4(r14),r4
+	sw	intTosR31(r14),r31
+
+	sw	intTosPtr(r14),r2	;Save ->Str
+	addui	r3,r2,0			;r3:= ->Str
+
+	slti	r2,r1,0			;N<0?
+	bf	r2,intToStr1		;No
+
+;	Store minus sign and negate N
+
+	addui	r2,r0,"-"		;Store neg sign
+	sb	(r3),r2
+	addui	r3,r3,1			;Inc intTosPtr
+	sub	r1,r0,r1		;Make N positive
+
+;	Convert the number to ASCII digits, in reversed order
+
+intToStr1
+	addui	r2,r0,10		;Divide N by 10
+	jal	div			;r1:= Quot, r2:= Rem
+
+	addui	r2,r2,"0"		;Convert remainder to ASCII
+	sb	(r3),r2			;And sore it
+	addui	r3,r3,1			;Inc intTosPtr
+
+	bnez	r1,intToStr1		;Loop if more digits to go
+
+	sb	(r3),r0			;Append sentinel
+
+;	Reverse the stored string
+
+	lw	r2,intTosPtr(r14)	;r2:= ->str
+	lbu	r1,(r2)			;Step over any leading "-"
+	sequi	r1,r1,"-"
+	addu	r2,r2,r1
+	subui	r3,r3,1			;Step back over sentinel
+
+intToStr2
+	lbu	r1,(r2)			;Swap characters from each end
+	lbu	r4,(r3)
+	sb	(r2),r4
+	sb	(r3),r1
+	addui	r2,r2,1			;Inc pointers
+	subui	r3,r3,1
+	sltu	r1,r2,r3		;More to go?
+	bt	r1,intToStr2		;Yes
+
+	lw	r31,intTosR31(r14)	;Restore registers
+	lw	r4,intTosR4(r14)
+	lw	r3,intTosR3(r14)
+	addui	r14,r14,intTosSiz	;Dealocate stack space
+	jr	r31			;And return

@@ -1,0 +1,1188 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       Prac2 	Manage a sorted listed of cities		              ;		
+;                                                                             ;
+;       Entry   .start Main                                                   ;
+;                                                                             ;
+;       Yifei Pei a1611648 13/May/2013                                        ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	.start	main
+
+        .seg    Data
+
+unfiMsg .ascii  "City not found\r\n\0"
+deleMsg .ascii  "City deleted\r\n\0"
+inseMsg .ascii  "City already exists\r\n\0"
+
+
+Cit     .space  20
+Cou     .space  20
+Unl     .space  8
+Lat     .space  20
+Lon     .space  20
+
+prompt	.ascii  "Action (S/D/I/P/E)? \0"
+exitMsg	.ascii	"Exit\r\n\0"
+errMsg	.ascii	"Unrecognised action\r\n\0"
+crlfMsg	.ascii	"\r\n\0"
+
+action  .space  20
+
+	.align  2
+
+        .seg    Code
+
+main	addui 	r1,r0,prompt		;Prompt for action
+	jal	StrPut
+
+	addui 	r1,r0,action		;Get response
+	addui 	r2,r0,20
+	jal	StrGet
+
+        lb	r3,action		;Get command char
+	beqz	r3,main7		;Jump if nothing type
+
+;	Skip over spaces
+
+	addi	r1,r0,action+1		;->response
+main1	lb	r2,(r1)			;Get next char
+	beqz	r2,main2		;Jump if no more
+	seqi	r2,r2," "		;Space?
+	bf	r2,main2		;No
+
+	addui	r1,r1,1			;Point to next char
+	j	main1
+
+;	Dispatch the command
+
+main2	seqi	r2,r3,"E"		;Exit command?
+        bt	r2,main8
+	seqi	r2,r3,"e"
+        bt	r2,main8
+
+	seqi	r2,r3,"P"		;Print command?
+	bt	r2,main3
+	seqi	r2,r3,"p"
+	bt	r2,main3
+
+	seqi	r2,r3,"S"		;Find command?
+	bt	r2,main4
+	seqi	r2,r3,"s"
+	bt	r2,main4
+
+	seqi	r2,r3,"D"		;Delete command?
+	bt	r2,main5
+	seqi	r2,r3,"d"
+	bt	r2,main5
+
+	seqi	r2,r3,"I"		;Insert command?
+	bt	r2,main6
+	seqi	r2,r3,"i"
+	bt	r2,main6
+
+;	Undefined command
+
+	addui	r1,r0,errMsg		;Print message
+	jal	StrPut
+	j	main			;...and loop
+
+;	Print the complete list
+
+main3	lw	r3,cityList		;init pointer
+main31	beqz	r3,main32		;jump if end of list
+
+	mov	r1,r3			;Print details
+	jal	print
+
+	lw	r3,ofsNext(r3)		;Point to next record
+	j	main31
+
+main32	j	main7
+
+;	Find a particular city
+
+main4	;...more here
+	jal	find
+	beqz    r1,main41               ;if r1=0, print msg
+        jal     print                   ;else print info
+	j	main7
+
+main41  addui   r1,r0,unfiMsg           ;print and display msg
+        jal     StrPut
+        j       main7
+
+;	Delete a city
+
+main5	;...more here
+	jal	delete
+	beqz    r1,main51               ;if r1=0, print msg
+        addui   r1,r0,deleMsg           ;else delete the city
+        jal     StrPut                  ;display delete msg
+	j	main7
+
+main51  addui   r1,r0,unfiMsg           ;print and display msg
+        jal     StrPut
+        j       main7
+
+;	Insert a new city
+
+main6   jal	insert                  
+	seqi    r1,r1,1                 ;if the insertion city exists
+        bt      r1,main61               ;print existence message
+        j       main7
+
+main61  addui   r1,r0,inseMsg           ;print existence message
+        jal     StrPut
+        j       main7
+
+main7	addui	r1,r0,crlfMsg		;Print blank line
+	jal	StrPut
+	j	main			;...and loop
+
+;	End of program
+
+main8	addui	r1,r0,exitMsg		;Print "exit"
+	jal	StrPut
+	halt
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       Print   Print the data about a city                                   ;
+;                                                                             ;
+;       Entry   r1= ->CityRecord        				      ;
+;               jal print                                                     ;
+;                                                                             ;
+;       uses    r1,r2                                                         ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+         .seg   Data
+
+pR31     .space 4
+pR4      .space 4
+tempStr  .space 4
+
+	 .align	2
+
+         .seg   Code
+
+print	 sw     pR4,r4                 
+         sw     pR31,r31               
+
+         add    r4,r1,r0               ;r4 help r1 add all info
+
+         addui  r1,r4,ofsName          ;r1 -> cityname
+         jal    StrPut                 ;display "cityname, "
+         addui  r1,r0,","
+         jal    Put
+         addui  r1,r0," "
+         jal    Put
+
+         addui  r1,r4,ofsCountry       ;r1 -> countryname
+         jal    StrPut                 ;display "countryname, "
+         addui  r1,r0,","
+         jal    Put
+         addui  r1,r0," "
+         jal    Put
+
+         addui  r1,r4,ofsLoc           ;r1 -> LOCODE
+         jal    StrPut                 ;display "LOCODE ("
+         addui  r1,r0," "
+         jal    Put
+         addui  r1,r0,"("
+         jal    Put
+
+         lw     r1,52(r4)              ;move to latitude
+         addui  r2,r0,tempStr          ;make int latitude to string
+         jal    IntToStr
+         addui  r1,r0,tempStr          ;r1 -> latitude
+         jal    StrPut                 ;display "latitude, "
+         addui  r1,r0,","
+         jal    Put
+         addui  r1,r0," "
+         jal    Put
+
+         lw     r1,56(r4)              ;move to longitude
+         addui  r2,r0,tempStr          ;make int longitude to string
+         jal    IntToStr
+         addui  r1,r0,tempStr          ;r1 -> longitude
+         jal    StrPut                 ;display "longitude)\r\n\0"
+
+         addui  r1,r0,")"
+         jal    Put
+         addui  r1,r0,crlfMsg
+
+         lw     r4,pR4
+         lw     r31,pR31
+         j      StrPut
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       Find   find a city in the list                                        ;
+;                                                                             ;
+;       Entry   r1= ->CityName                                                ;
+;               jal find                                                      ;
+;                                                                             ;
+;       Exit    r1= ->CityRecord                                              ;
+;               r1= 0 if not found	                 		      ;
+;                                                                             ;
+;       uses    r1,r2                                                         ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .seg    Data
+
+fR31    .space  4                      
+fR3     .space  4
+fR4     .space  4
+fR5     .space  4
+
+	.align	2
+
+        .seg    Code
+
+find	sw      fR3,r3
+        sw      fR4,r4
+        sw      fR5,r5
+        sw      fR31,r31
+
+        addui   r2,r0,cityList          ;r2 -> cityList
+        add     r3,r0,r1                ;store CityName in r3
+
+loop    add     r4,r2,r0                ;store current position in r4
+        beqz    r2,find0                ;if list == null, go to find0
+        addui   r2,r2,ofsName           ;r2 -> RecordName
+        jal     StrCmp                  ;compare CityName and RecordName
+        beqz    r1,find1                ;if they are the same, go to find1
+        add     r1,r0,r3                ;else put CityName back to r1
+        add     r5,r0,r4                ;store current position
+        lw      r2,ofsNext(r4)          ;move to next city
+        j       loop                    ;continue the loop until end
+
+find1   add     r1,r0,r4                ;r1 =-> current city
+        add     r2,r0,r5                ;r2 =-> previous position
+
+return  lw      r3,fR3
+        lw      r4,fR4
+        lw      r5,fR5
+        lw      r31,fR31
+        jr      r31
+
+find0   add     r1,r0,r0                ;all cityList searched up, r1 = 0
+        j       return                  ;jump to return
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       Delete  Delete a city from the list and return  its record            ;
+;                                                                             ;
+;       Entry   r1= ->CityName                                                ;
+;               jal delete                                                    ;
+;                                                                             ;
+;       Exit    r1= 1 if found                                                ;
+;               r1= 0 if not found                                            ;
+;                                                                             ;
+;       uses    r1,r2                                                         ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .seg    Data
+
+dR31    .space  4
+dR3     .space  4
+dR4     .space  4
+
+	.align	2
+
+        .seg    Code
+
+delete	sw      dR3,r3                
+        sw      dR4,r4
+        sw      dR31,r31
+
+        jal     find                    ;check if the city in the list
+        beqz    r1,end                  ;if no, go to end
+                                        ;else delete the city
+        lw      r3,ofsNext(r1)          ;get the next city
+        sw      (r2),r3                 ;skip the deleted
+        lw      r3,freeList             ;get freeList
+        lw      r4,ofsNext(r3)          ;get the next element in freeList
+        sw      (r3),r1                 ;put the deleted into freeList
+        sw      (r1),r4                 ;link the next to deleted
+        addui   r1,r0,1                 ;make r1 = 1
+
+end     lw      r3,dR3
+        lw      r4,dR4
+        lw      r31,dR31
+
+        jr      r31
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       Insert   Insert a record in the list                                  ;
+;                Acquire arecord from the freelist, read data from user then  ;
+;                link it into the list                                        ;
+;                                                                             ;
+;       Entry   jal insert                                                    ;
+;                                                                             ;
+;       uses    r1,r2                                                         ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .seg    Data
+
+Ci      .ascii  "City: \0"
+Co      .ascii  "Country: \0"
+Un      .ascii  "UN Locode: \0"
+La      .ascii  "Latitude: \0"
+Lo      .ascii  "Longitude: \0"
+
+number  .space  8
+
+iR31    .space  4
+iR1     .space  4
+iR4     .space  4
+iR5     .space  4
+iR6     .space  4
+iR7     .space  4                       
+
+	.align	2
+
+        .seg    Code
+
+insert	sw      iR31,r31
+        sw      iR1,r1
+        sw      iR4,r4
+        sw      iR5,r5
+        sw      iR6,r6
+        sw      iR7,r7
+
+        lw      r4,cityList
+        lw      r5,freeList
+        lw      r6,cityList
+
+        addui   r1,r0,Ci                 ;ask for cityname
+        jal     StrPut
+        addui   r1,r5,ofsName
+        addui   r2,r0,20
+        jal     StrGet
+
+        mov     r7,r1                    ;backup cityname
+
+        addui   r1,r0,Co                 ;ask for countryname
+        jal     StrPut
+        addui   r1,r5,ofsCountry
+        addui   r2,r0,20
+        jal     StrGet
+
+        addui   r1,r0,Un                 ;ask for unlocode
+        jal     StrPut
+        addui   r1,r5,ofsLoc
+        addui   r2,r0,8
+        jal     StrGet
+
+        addui   r1,r0,La                 ;ask for latitude
+        jal     StrPut
+        addui   r1,r0,number
+        addui   r2,r0,8
+        jal     StrGet
+        jal     StrToInt
+        sw      ofsLat(r5),r1
+
+        addui   r1,r0,Lo                  ;ask for longitude
+        jal     StrPut
+        addui   r1,r0,number
+        addui   r2,r0,8
+        jal     StrGet
+        jal     StrToInt
+        sw      ofsLong(r5),r1
+
+        mov     r1,r7                     ;check if the insertion city
+        jal     find                      ;exists
+        bnez    r1,insert5                ;go to the end
+
+insert1 beqz    r4,insert2                ;if insertion finish, go to insert2
+        addui   r1,r5,ofsName             ;r1 =-> freeList cityname
+        addui   r2,r4,ofsName             ;r2 =-> cityList cityname
+        jal     StrCmp                    ;compare to find insert position
+        seqi    r1,r1,1
+        bf      r1,insert3
+        mov     r6,r4                     ;backup the insertion city
+        lw      r4,ofsNext(r4)            ;go to next record
+        j       insert1                   ;and insert all records
+
+insert2 sw      ofsNext(r6),r5            ;freeList link to last record
+        lw      r1,ofsNext(r5)            
+        sw      freeList,r1
+        sw      ofsNext(r5),r4            ;freeList link to next record
+        j       insert6
+
+insert3 seq     r7,r4,r6                  ;check if the insertion at head
+        beqz    r7,insert2                ;else go to insert2
+        sw      cityList,r5               ;insert at the head
+        lw      r1,ofsNext(r5)
+        sw      freeList,r1
+        sw      (r5),r4
+        j       insert6
+
+insert5 addui   r1,r0,1                   ;if exist, r1 = 1
+        j       insert6
+
+insert6 lw      r31,iR31
+        lw      r1,iR1
+        lw      r4,iR4
+        lw      r5,iR5
+        lw      r6,iR6
+        lw      r7,iR7
+        jr      r31
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       Global constant definitions                                           ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .seg    Code
+
+AsciiCR	.equ	16#0D			;Carriage return
+AsciiLF	.equ	16#0A			;Line feed
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       StrGet  Get a string from input                                       ;
+;                                                                             ;
+;       Entry   r1= ->Str                                                     ;
+;               r2= MaxLength                                                 ;
+;               jal StrGet                                                    ;
+;                                                                             ;
+;       Exit    r1= ->Str                                                     ;
+;               r2= StrLength                                                 ;
+;                                                                             ;
+;       Note    Must have r2>0                                                ;
+;                                                                             ;
+;       Uses    r2                                                            ;
+;                                                                             ;
+;       Written D Knight 8-Mar-98                                             ;
+;       Amended A Brown 30-May-01                                             ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .seg    Data
+
+	.align	2
+StrGetPtr .space 4
+StrGetLen .space 4
+StrGetR3  .space 4
+StrGetR4  .space 4
+StrGetR31 .space 4
+
+        .seg    Code
+
+	.align	2
+StrGet	sw	StrGetR3,r3		;Save registers
+	sw	StrGetR4,r4
+	sw	StrGetR31,r31
+
+	sw	StrGetPtr,r1		;Save StrPtr
+	sw	StrGetLen,r2		;Save MaxLen
+
+	addui	r3,r1,0			;r3= StrPtr
+	subui	r2,r2,1			;Save space for sentinel
+	beqz	r2,StrGet2
+
+StrGet1	jal	Get			;Get a char
+	sb	(r3),r1			;Store it
+
+	sequi	r4,r1,AsciiCR		;CR?
+	bt	r4,StrGet2		;Yes
+	sequi	r4,r1,AsciiLF		;LF?
+	bt	r4,StrGet2		;Yes
+
+	jal	Put			;Echo if not CR or LF
+	addi	r3,r3,1			;Inc StrPtr
+	subui	r2,r2,1			;Decr space remaining
+	bnez	r2,StrGet1		;Loop if more
+
+StrGet2	sb	(r3),r0			;Append sentinel
+
+	addi	r1,r0,AsciiCR		;Print CR
+	jal	Put
+	addi	r1,r0,AsciiLF		;Print LF
+	jal	Put
+
+	lw	r1,StrGetLen		;Compute StrLength
+	sub	r2,r1,r2
+	lw	r1,StrGetPtr
+
+	lw	r31,StrGetR31		;Restore registers
+	lw	r4,StrGetR4
+	lw	r3,StrGetR3
+	jr	r31			;return
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       StrPut  Put a null-terminated string to the screen                    ;
+;                                                                             ;
+;       Entry   r1= ->Str                                                     ;
+;               jal StrPut                                                    ;
+;                                                                             ;
+;       Uses    r1,r2                                                         ;
+;                                                                             ;
+;       Written D Knight 8-Mar-98                                             ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .seg    Data
+
+StrPutR31 .space 4
+
+        .seg    Code
+
+StrPut	sw	StrPutR31,r31		;Save registers
+	
+	addui	r2,r1,0			;r2= StrPtr
+	j	StrPut2
+
+StrPut1	jal	Put			;Print the character
+	addui	r2,r2,1			;Inc StrPtr
+StrPut2	lbu	r1,(r2)			;Get next char
+	bnez	r1,StrPut1
+
+	lw	r31,StrPutR31		;Restore registers
+	jr	r31			;Return
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       StrCmp 	Compare two null-terminated strings                           ;
+;                                                                             ;
+;       Entry   r1= ->Str1                                                    ;
+;               r2= ->Str2                                                    ;
+;               jal StrCmp                                                    ;
+;                                                                             ;
+;       Exit    r1=-1 if Str1<Str2                                            ;
+;               r1=0  if Str1=Str2                                            ;
+;		r1=+1 if Str1>Str2                                            ;
+;                                                                             ;
+;       Uses    r1,r2                                                         ;
+;                                                                             ;
+;       Written D Knight 8-Mar-98                                             ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .seg    Data
+
+StrCmpR3 .space	4
+StrCmpR4 .space 4
+StrCmpR5 .space 4
+
+        .seg    Code
+
+StrCmp	sw	StrCmpR3,r3		;Save registers
+	sw	StrCmpR4,r4
+	sw	StrCmpR5,r5
+
+
+StrCmp1	lbu	r3, (r1)		;Ch1= StrPtr1^
+	lbu	r4, (r2)		;Ch2= StrPtr2^
+	sltu	r5,r3,r4		;Ch1<Ch2?
+	bt	r5,StrCmp2		;Yes
+
+	sgtu	r5,r3,r4		;Ch1>Ch2?
+	bt	r5,StrCmp3		;Yes
+
+	sneui	r5,r3,0			;End of strings?
+	bf	r5,StrCmp3		;No
+
+	addui	r1,r1,1			;Inc StrPtr1
+	addui	r2,r2,1			;Inc StrPtr2
+	j	StrCmp1
+
+StrCmp2	addi	r5,r0,-1		;Result is LESS
+
+StrCmp3	addui	r1,r5,0			;r1= result
+
+	lw	r5,StrCmpR5		;Restore registers
+	lw	r4,StrCmpR4
+	lw	r3,StrCmpR3
+	jr	r31			;And return
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       StrToInt Convert null-terminated string to signed 32-bit integer      ;
+;                                                                             ;
+;       Entry   r1= ->Str                                                     ;
+;               jal StrToInt                                                  ;
+;                                                                             ;
+;       Exit    r1= Number                                                    ;
+;                                                                             ;
+;       Note    If string contains illegal digits, returns 16#80000000        ;
+;               No check for numerical overflow during calculations           ;
+;                                                                             ;
+;       Uses    r1,r2                                                         ;
+;                                                                             ;
+;       Written D Knight 8-Mar-98                                             ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .seg    Data
+
+StrToiR3 .space	4
+StrToiR4 .space 4
+StrToiR5 .space 4
+
+        .seg    Code
+
+StrToInt
+	sw	StrToiR3,r3		;Save registers
+	sw	StrToiR4,r4
+	sw	StrToiR5,r5
+
+;	From here on
+;	r1= ->Str
+;	r2= Current character
+;	r3= Sign of N
+;	r4= N
+;	r5= Temp
+
+	addui	r4,r0,0			;N= 0
+
+	lbu	r2,(r1)			;+ sign at front?
+	sneui	r3,r2,"+"
+	bf	r3,StrToInt2		;Yes
+	sequi	r3,r2,"-"		;- sign at front?
+	bt	r3,StrToInt2		;Yes
+
+	bnez	r2,StrToInt3		;Some characters?
+	j	StrToInt6
+
+;	Process each digit
+
+StrToInt1
+	addu	r4,r4,r4		;N= N*10
+	slai	r5,r4,2
+	addu	r4,r4,r5
+
+	subui	r2,r2,"0"		;Convert digit from Ascii
+	sltui	r5,r2,10		;Legal?
+	bf	r5,StrToInt5		;No
+
+	add	r4,r4,r2		;N= N+Digit
+
+StrToInt2
+	addui	r1,r1,1			;Step to next char
+StrToInt3
+	lb	r2,(r1)			;Get next char
+	bnez	r2,StrToInt1		;Loop if not at end of string
+
+;	Apply correct sign
+
+	bf	r3,StrToInt4		;Jump if positive
+	sub	r4,r0,r4		;Negate N
+
+StrToInt4
+	add	r1,r4,r0		;r1= N
+
+StrToInt5
+	lw	r5,StrToiR5		;Restore registers
+	lw	r4,StrToiR4
+	lw	r3,StrToiR3
+	jr	r31			;Return
+
+;	Bad data, return "ILLEGAL" value
+
+StrToInt6
+	lhi	r4,16#8000		;r4= ILLEGAL
+	j	StrToInt5
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       IntToStr Convert signed 32-bit integer to null-terminated string      ;
+;                                                                             ;
+;       Entry   r1= integer N                                                 ;
+;               r2= ->Str                                                     ;
+;               jal IntToStr                                                  ;
+;                                                                             ;
+;       Note    The string must be large enough to contain the digits of N    ;
+;                                                                             ;
+;       Uses    r1,r2                                                         ;
+;                                                                             ;
+;       Written D Knight 8-Mar-98                                             ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .seg    Data
+
+IntTosR3 .space	4
+IntTosR4 .space 4
+IntTosR31 .space 4
+IntTosPtr .space 4
+
+        .seg    Code
+
+IntToStr
+	sw	IntTosR3,r3		;Save registers
+	sw	IntTosR4,r4
+	sw	IntTosR31,r31
+
+	sw	IntTosPtr,r2		;Save ->Str
+	addui	r3,r2,0			;r3= ->Str
+
+	slti	r2,r1,0			;N<0?
+	bf	r2,IntToStr1		;No
+
+;	Store minus sign and negate N
+
+	addui	r2,r0,"-"		;Store neg sign
+	sb	(r3),r2
+	addui	r3,r3,1			;Inc IntTosPtr
+	sub	r1,r0,r1		;Make N positive
+
+;	Convert the number to Ascii digits, in reversed order
+
+IntToStr1
+	addui	r2,r0,10		;Divide N by 10
+	jal	Div			;r1= Quot, r2= Rem
+
+	addui	r2,r2,"0"		;Convert remainder to Ascii
+	sb	(r3),r2			;And sore it
+	addui	r3,r3,1			;Inc IntTosPtr
+
+	bnez	r1,IntToStr1		;Loop if more digits to go
+
+	sb	(r3),r0			;Append sentinel
+
+;	Reverse the stored string
+
+	lw	r2,IntTosPtr		;r2= ->str
+	lbu	r1,(r2)			;Step over any leading "-"
+	sequi	r1,r1,"-"
+	addu	r2,r2,r1
+	subui	r3,r3,1			;Step back over sentinel
+
+IntToStr2
+	lbu	r1,(r2)			;Swap characters from each end
+	lbu	r4,(r3)
+	sb	(r2),r4
+	sb	(r3),r1
+	addui	r2,r2,1			;Inc pointers
+	subui	r3,r3,1
+	sltu	r1,r2,r3		;More to go?
+	bt	r1,IntToStr2		;Yes
+
+	lw	r31,IntTosR31		;Restore registers
+	lw	r4,IntTosR4
+	lw	r3,IntTosR3
+	jr	r31			;And return
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       Div     Signed 32 bit integer division                                ;
+;                                                                             ;
+;               Based on algorithm in Sun SPARC Architecture Manual           ;
+;                                                                             ;
+;       Entry   r1= integer N (=Numerator)                                    ;
+;               r2= integer D (=Denominator)                                  ;
+;		r14= SP                                                       ;
+;               jal Div                                                       ;
+;                                                                             ;
+;       Exit    r1= integer Q (=Quotient)                                     ;
+;               r2= unsigned R (=Remainder)                                   ;
+;                                                                             ;
+;       Note    Requires abs(N)<2^31 and abs(D)<2^31 and D<>0                 ;
+;                                                                             ;
+;       Uses    r1,r2                                                         ;
+;                                                                             ;
+;       Written D Knight 8-Mar-98                                             ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .seg    Data
+
+DivR3	.space	4
+DivR4	.space	4
+DivR31	.space	4
+
+        .seg    Code
+
+Div	sw	DivR3,r3		;Save registers
+	sw	DivR4,r4
+	sw	DivR31,r31
+
+	srai	r3,r1,31		;r3= sign(N)
+	xor	r1,r1,r3		;r1= abs(N)
+	sub	r1,r1,r3
+
+	srai	r4,r2,31		;r4= sign(D)
+	xor	r2,r2,r4		;r2= abs(D)
+	sub	r2,r2,r4
+
+	xor	r3,r3,r4		;r3= required sign(Q)
+
+	jal	DivU			;r1= N/D, r2= N mod D
+
+	xor	r1,r1,r3		;Apply sign to Q
+	sub	r1,r1,r3
+
+	lw	r31,DivR31		;Restore registers
+	lw	r4,DivR4
+	lw	r3,DivR3
+	jr	r31			;And return
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       DivU    Unsigned 32 bit integer division                              ;
+;                                                                             ;
+;               Based on algorithm in Sun SPARC Architecture Manual           ;
+;                                                                             ;
+;       Entry   r1= unsigned N (=numerator)                                   ;
+;               r2= unsigned D (=denominator)                                 ;
+;		r14= SP                                                       ;
+;               jal DivU                                                      ;
+;                                                                             ;
+;       Exit    r1= unsigned Q (=quotient)                                    ;
+;               r2= unsigned R (=remainder)                                   ;
+;                                                                             ;
+;       Uses    r1,r2                                                         ;
+;                                                                             ;
+;       Written D Knight 8-Mar-98                                             ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .seg    Data
+
+DivuR3	.space	4
+DivuR4	.space	4
+DivuR5	.space	4
+DivuR6	.space	4
+
+        .seg    Code
+
+DivU	sw	DivuR3,r3		;Save registers
+	sw	DivuR4,r4
+	sw	DivuR5,r5
+	sw	DivuR6,r6
+
+; 	From here on
+;	r1= unsigned N  (Numerator)
+;	r2= unsigned D  (Denominator)
+;	r3= unsigned Q  (Quotient)
+;	r4= integer R  (Remainder)
+;	r5= integer IterCnt   (Iteration counter)
+;	r6= Temp register
+
+	addui	r3,r0,0			;Q= 0
+	addu	r4,r0,r1		;R= N
+
+	bnez	r2,DivU1		;Ok if D<>0
+
+;	Error, division by zero
+
+	subi	r3,r0,1 		;Error, Q=2^32-1
+	addui	r4,r0,0			;R=0
+	j	DivU6
+
+DivU1	beqz	r1,DivU6		;Done if N=0
+
+;	Calculate iteration count
+
+	addi	r5,r0,-1		;IterCnt= -1
+DivU2	addi	r5,r5,1			;IterCnt= IterCnt+1
+	sll	r6,r2,r5		;D*2^IterCnt>=N?
+	sgeu	r6,r6,r1
+	bf	r6,DivU2		;No
+
+;	Perform division
+
+	addi	r5,r5,1			;Adjust IterCnt
+DivU3	subi	r5,r5,1			;Decr IterCnt
+	sgei	r6,r4,0			;R>=0?
+	bf	r6,DivU4		;No
+
+	sll	r6,r2,r5		;R= R-D*2^Iter
+	sub	r4,r4,r6
+	addui	r6,r0,1			;Q= Q+2^Iter
+	sll	r6,r6,r5
+	addu	r3,r3,r6
+	bnez	r5,DivU3		;Loop if IterCnt<>0
+	j	DivU5
+
+DivU4	sll	r6,r2,r5		;R= R+D*2^Iter
+	add	r4,r4,r6
+	addui	r6,r0,1			;Q= Q-2^Iter
+	sll	r6,r6,r5
+	subu	r3,r3,r6
+	bnez	r5,DivU3		;Loop if IterCnt<>0
+
+;	Final correction, if needed
+
+DivU5	slti	r6,r4,0			;R<0?
+	bf	r6,DivU6		;No
+
+	add	r4,r4,r2		;R= R+D
+	subui	r3,r3,1			;Q= Q-1
+
+DivU6	addui	r1,r3,0			;r1= Q
+	addui	r2,r4,0			;r2= R
+
+	lw	r6, DivuR6		;Restore registers
+	lw	r5, DivuR5
+	lw	r4, DivuR4
+	lw	r3, DivuR3
+	jr	r31			;And return
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       Put     Displays a character on the screen                            ;
+;                                                                             ;
+;       Entry   r1= Char                                                      ;
+;               jal Put                                                       ;
+;                                                                             ;
+;       Uses    none                                                          ;
+;                                                                             ;
+;       Written D Knight and P Ashenden 29-Mar-2000                           ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .seg    Data
+
+DspCtrl .equ	16#FFFF_FF08
+Dsp_Rdy	.equ	1<<7
+DspData	.equ	16#FFFF_FF0C
+
+        .seg    Code
+
+Put	sw	PutR2, r2		;Save r2
+Put1	lw	r2, DspCtrl		;Display ready?
+	andi	r2, Dsp_Rdy		 
+	bf	r2, Put1		;No, wait
+	sw	DspData, r1		;Display the character
+
+	lw	r2, PutR2		;Restore R2
+	jr	r31			;Return
+
+        .seg    Data
+
+PutR2	.space	4
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       Get     Get a character from the Keyboard                             ;
+;                                                                             ;
+;       Entry   jal Get                                                       ;
+;                                                                             ;
+;       Exit    r1= Char                                                      ;
+;                                                                             ;
+;       Uses    r1                                                            ;
+;                                                                             ;
+;       Written D Knight and P Ashenden 29-Mar-2000                           ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .seg    Data
+
+KbdCtrl	.equ	16#FFFF_FF00
+Kbd_Rdy	.equ	1<<7
+KbdData	.equ	16#FFFF_FF04
+
+        .seg    Code
+
+Get	sw	GetR2, r2		;Save R2
+Get1	lw	r2, KbdCtrl		;Character available?
+	andi	r2, Kbd_Rdy
+	bf	r2, Get1		;No, wait
+	lw	r1, KbdData		;Get the character
+
+	lw	r2, GetR2		;Restore R2
+	jr	r31			;Return
+
+        .seg    Data
+
+GetR2	.space  4
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;       CityList linked list of CityRecords 	         			;
+;										;
+; typedef struct{ 								;
+;                 cityentry *next;						;
+;                 city  string(0..19);						;
+;                 country  string(0..19);					;
+;                 unlocode  string(0..7);					;
+;                 latitude  integer;						;
+;                 longitude  integer;						;
+; } cityentry									;
+;										;
+; size of each record = 4 + 20 + 20 + 8 + 4 + 4 = 60 bytes 				;
+; offset to next = 0								;
+; offset to city = 4								;
+; offset to country = 24							;
+; offset to unlocode = 44							;
+; offset to latitude = 52							;
+; offset to longitude = 56							;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+          .seg  Data
+
+ofsNext		.equ	0
+ofsName		.equ	4
+ofsCountry	.equ	24
+ofsLoc		.equ	44
+ofsLat		.equ	52
+ofsLong		.equ	56
+
+         .seg   List
+
+         .align 2
+cityList .word 	adel
+
+
+havana	.word 	jak
+ 	.ascii  "Havana\0             "
+        .ascii  "Cuba\0               "
+	.ascii  "CU HAV\0 "
+        .word   23
+        .word   -82
+
+adel	.word  	berlin
+   	.ascii  "Adelaide\0           "
+        .ascii  "Australia\0          "
+	.ascii  "AU ADL\0 "
+        .word   -35
+        .word   138
+
+canb	.word  	dublin
+	.ascii  "Canberra\0           "
+        .ascii  "Australia\0          "
+	.ascii  "AU CBR\0 "
+        .word   -35
+        .word   149
+
+edin	.word  	flor
+	.ascii  "Edinburgh\0          "
+        .ascii  "Scotland\0           "
+	.ascii  "GB EDI\0 "
+        .word   55
+        .word   -3
+
+paris	.word	sydney
+ 	.ascii  "Paris\0              "
+        .ascii  "France\0             "
+	.ascii  "FR PAR\0 "
+        .word   48
+        .word   2
+
+berlin	.word 	canb
+	.ascii  "Berlin\0             "
+        .ascii  "Germany\0            "
+	.ascii  "DE BER\0 "
+        .word   52
+        .word   13
+
+flor	.word 	havana
+	.ascii  "Florence\0           "
+        .ascii  "Italy\0              "
+	.ascii  "IT FLR\0 "
+        .word   44
+        .word   11
+
+jak	.word 	london
+	.ascii  "Jakarta\0            "
+        .ascii  "Indonesia\0          "
+	.ascii  "ID JKT\0 "
+        .word   -6
+        .word   106
+
+warsaw	.word 	zanzi
+ 	.ascii  "Warsaw\0             "
+        .ascii  "Poland\0             "
+	.ascii  "PL WAW\0 "
+        .word   52
+        .word   21
+
+zanzi	.word	0
+ 	.ascii  "Zanzibar\0           "
+        .ascii  "Tanzania\0           "
+	.ascii  "TZ MKO\0 "
+        .word   -6
+        .word   39
+
+dublin	.word 	edin
+	.ascii  "Dublin\0             "
+        .ascii  "Eire\0               "
+	.ascii  "IE DUB\0 "
+        .word   53
+        .word   -6
+
+london	.word  	oslo
+	.ascii  "London\0             "
+        .ascii  "England\0            "
+	.ascii  "GB LON\0 "
+        .word   52
+        .word   0
+
+oslo	.word	paris
+	.ascii  "Oslo\0               "
+        .ascii  "Norway\0             "
+	.ascii  "NO OSL\0 "
+        .word   60
+        .word   11
+
+sydney	.word 	tokyo
+	.ascii  "Sydney\0             "
+        .ascii  "Australia\0          "
+	.ascii  "AU SYD\0 "
+        .word   -33
+        .word   151
+
+tokyo	.word 	warsaw
+  	.ascii  "Tokyo\0              "
+        .ascii  "Japan\0              "
+	.ascii  "JP TYO\0 "
+        .word   35
+        .word   139
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;								;
+; freeList list of free records    				;
+;	 linked list of empty records				;
+;								;
+; A free record is used by insert and removed from this list    ;
+; a deleted record is returned to this list                     ;
+;								;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+freeList .word 	free0 		;List of free records to use
+
+free0	.word 	free1		;Pointer to next hole
+	.space 	60 
+
+free3	.word 	free4
+	.space 	60
+
+free1	.word 	free2
+	.space 	60
+
+free4   .word 	0
+	.space 	60
+
+free2	.word 	free3
+	.space 	60 
+
+
+

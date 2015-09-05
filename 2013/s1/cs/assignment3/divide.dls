@@ -1,0 +1,164 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       div     Signed 32 bit integer division                                ;
+;                                                                             ;
+;               Based on algorithm in Sun SPARC Architecture Manual           ;
+;                                                                             ;
+;       Entry   r1= integer N (=Numerator)                                    ;
+;               r2= integer D (=Denominator)                                  ;
+;		r14= StackPointer                                             ;
+;               jal div                                                       ;
+;                                                                             ;
+;       Exit    r1= integer Q (=Quotient)                                     ;
+;               r2= unsigned R (=Remainder)                                   ;
+;                                                                             ;
+;       Note    Requires abs(N)<2^31 and abs(D)<2^31 and D<>0                 ;
+;                                                                             ;
+;       Uses    r1,r2                                                         ;
+;                                                                             ;
+;       Written D Knight 8-Mar-98                                             ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	.export	div
+
+divR3	.equ	0
+divR4	.equ	4
+divR31	.equ	8
+divSize	.equ	12
+
+	.seg	Code
+	.align	2
+
+div:	subui	r14,r14,divSize		;Allocate stack space
+	sw	divR3(r14),r3		;Save registers
+	sw	divR4(r14),r4
+	sw	divR31(r14),r31
+
+	srai	r3,r1,31		;r3:= sign(N)
+	xor	r1,r1,r3		;r1:= abs(N)
+	sub	r1,r1,r3
+
+	srai	r4,r2,31		;r4:= sign(D)
+	xor	r2,r2,r4		;r2:= abs(D)
+	sub	r2,r2,r4
+
+	xor	r3,r3,r4		;r3:= required sign(Q)
+
+	jal	divU			;r1:= N/D, r2:= N mod D
+
+	xor	r1,r1,r3		;Apply sign to Q
+	sub	r1,r1,r3
+
+	lw	r31,divR31(r14)		;Restore registers
+	lw	r4,divR4(r14)
+	lw	r3,divR3(r14)
+	addui	r14,r14,divSize		;Deallocate stack
+	jr	r31			;And return
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       divU    Unsigned 32 bit integer division                              ;
+;                                                                             ;
+;               Based on algorithm in Sun SPARC Architecture Manual           ;
+;                                                                             ;
+;       Entry   r1= unsigned N (=numerator)                                   ;
+;               r2= unsigned D (=denominator)                                 ;
+;		r14= StackPointer                                             ;
+;               jal divU                                                      ;
+;                                                                             ;
+;       Exit    r1= unsigned Q (=quotient)                                    ;
+;               r2= unsigned R (=remainder)                                   ;
+;                                                                             ;
+;       Uses    r1,r2                                                         ;
+;                                                                             ;
+;       Written D Knight 8-Mar-98                                             ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	.export	divU
+
+divuR3	.equ	0
+divuR4	.equ	4
+divuR5	.equ	8
+divuR6	.equ	12
+divUSiz	.equ	16
+
+	.seg	Code
+	.align	2
+
+divU:	subui	r14,r14,divUSiz		;Allocate stack space
+	sw	divuR3(r14),r3		;Save registers
+	sw	divuR4(r14),r4
+	sw	divuR5(r14),r5
+	sw	divuR6(r14),r6
+
+; 	From here on:
+;	r1= unsigned N  (Numerator)
+;	r2= unsigned D  (Denominator)
+;	r3= unsigned Q  (Quotient)
+;	r4= integer R  (Remainder)
+;	r5= integer IterCnt   (Iteration counter)
+;	r6= Temp register
+
+	addui	r3,r0,0			;Q:= 0
+	addu	r4,r0,r1		;R:= N
+
+	bnez	r2,divU1		;Ok if D<>0
+
+;	Error, division by zero
+
+	subi	r3,r0,1			;Error, Q:=2^32-1
+	addui	r4,r0,0			;R:=0
+	j	divU6
+
+divU1:	beqz	r1,divU6		;Done if N=0
+
+;	Calculate iteration count
+
+	addi	r5,r0,-1		;IterCnt:= -1
+divU2:	addi	r5,r5,1			;IterCnt:= IterCnt+1
+	sll	r6,r2,r5		;D*2^IterCnt>=N?
+	sgeu	r6,r6,r1
+	bf	r6,divU2		;No
+
+;	Perform division
+
+	addi	r5,r5,1			;Adjust IterCnt
+divU3:	subi	r5,r5,1			;Decr IterCnt
+	sgei	r6,r4,0			;R>=0?
+	bf	r6,divU4		;No
+
+	sll	r6,r2,r5		;R:= R-D*2^Iter
+	subu	r4,r4,r6
+	addui	r6,r0,1			;Q:= Q+2^Iter
+	sll	r6,r6,r5
+	addu	r3,r3,r6
+	bnez	r5,divU3		;Loop if IterCnt<>0
+	j	divU5
+
+divU4:	sll	r6,r2,r5		;R:= R+D*2^Iter
+	addu	r4,r4,r6
+	addui	r6,r0,1			;Q:= Q-2^Iter
+	sll	r6,r6,r5
+	subu	r3,r3,r6
+	bnez	r5,divU3		;Loop if IterCnt<>0
+
+;	Final correction, if needed
+
+divU5:	slti	r6,r4,0			;R<0?
+	bf	r6,divU6		;No
+
+	add	r4,r4,r2		;R:= R+D
+	subui	r3,r3,1			;Q:= Q-1
+
+divU6:	addui	r1,r3,0			;r1:= Q
+	addui	r2,r4,0			;r2:= R
+
+	lw	r6,divuR6(r14)		;Restore registers
+	lw	r5,divuR5(r14)
+	lw	r4,divuR4(r14)
+	lw	r3,divuR3(r14)
+	addui	r14,r14,divUSiz		;Deallocate stack
+	jr	r31			;And return

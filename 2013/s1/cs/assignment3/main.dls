@@ -1,0 +1,91 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       Sorter Main program for CS prac 3                                     ;
+;                                                                             ;
+;              Reads numbers from input, 2 per line.  Sorts the data, then    ;
+;              prints out the sorted data.                                    ;
+;                                                                             ;
+;       Entry   .start init                                                   ;
+;                                                                             ;
+;       Written YOUR NAME AND DATE HERE                                       ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+MAXLINES .equ	10			;Maximum number of lines to read
+
+
+	.export	main
+
+	.import	intToStr
+	.import	insert
+	.import	infix
+	.import	readData
+	.import	strPut
+
+	
+	.seg	Code
+	.align	2
+
+data	.equ	-4*(2*MAXLINES)
+strBuf	.equ	data-16
+framSiz	.equ	-strBuf
+
+main	addi	r30,r14,0		;Create stack frame
+	subui	r14,r14,framSiz
+
+	addui	r1,r0,msgUns		;Print heading
+	jal	strPut
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;	NrItems:= ReadData(Data,MaxLine)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	addi	r1,r30,data		;r1:= ->Data
+	addi	r2,r0,MAXLINES		;r2:= NrLinesToRead
+	jal	readData
+	add	r3,r1,r0		;r3:= NrItems
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;	for(i = 0; i < NrItems; i++) tree=insert(tree,Data[i]);
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	clr	r4			; r4 = tree ; initially empty
+	clr	r5			; r5 = loop counter i
+	addi	r6,r30,data		; r6 = data
+
+wloop	slt	r7,r5,r3		; while i < NrItems
+	bf	r7,display
+
+	subui	r14,r14,8		; Call insert
+	sw	0(r14),r4		; push tree
+	slli	r1,r5,2			; r1 = data[i]
+	add	r1,r1,r6
+	lw	r1,(r1)
+	sw	4(r14),r1		; push data[i]
+	jal	insert
+	mov	r4,r1			; r4 = tree with data added
+	addui	r14,r14,8		; clean up
+
+	addi	r5,r5,1			; i++
+	j	wloop
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;	Print binary search tree
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+display
+	addui	r1,r0,msgSort		;Print heading
+	jal	strPut
+
+	subui	r14,r14,4		; Call infix
+	sw	0(r14),r4		; push tree
+	jal	infix
+	addui	r14,r14,4		; clean up
+
+	halt				;... and halt
+
+
+	.seg	Constant
+msgUns	.ascii	"Unsorted data...\r\n\0"
+msgSort	.ascii	"Reversed Sorted data...\r\n\0"

@@ -1,0 +1,138 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       readData Read integer data into an array                              ;
+;                                                                             ;
+;		Reads in an array of integers from the keyboard, with two     ;
+;		integers per line.  The number of lines to read is specified  ;
+;		by a parameter.  Note: Illegal values are NOT stored in the   ;
+;		array                                                         ;
+;                                                                             ;
+;       Entry   r1= ->Array of integers (0-based subscripts)                  ;
+;		r2= Number of lines of data to read                           ;
+;               jal readData                                                  ;
+;                                                                             ;
+;       Exit    r1= Number of integers actually stored in the array           ;
+;                                                                             ;
+;       Uses   r1,r2                                                          ;
+;                                                                             ;
+;       Written David Knight 22-Mar-06                                        ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	.export	readData
+
+	.import	strGet
+	.import	strPut
+	.import	strToInt
+
+	.seg	Code
+	.align	2
+
+KeyBuf	.equ	80
+
+rdDatR3	.equ	-8
+rdDatR4	.equ	-12
+rdDatR5	.equ	-16
+rdDatR6	.equ	-20
+rdDatR7	.equ	-24
+rdDatR31.equ	-28
+rdDatBuf .equ	-32-KeyBuf			;Keyboard buffer
+rdDatSiz .equ	32+KeyBuf
+
+readData
+	sw	-4(r14),r30		;Create stack frame
+	add	r30,r14,r0
+	subui	r14,r14,rdDatSiz
+
+	sw	rdDatR3(r30),r3		;Save registers
+	sw	rdDatR4(r30),r4
+	sw	rdDatR5(r30),r5
+	sw	rdDatR6(r30),r6
+	sw	rdDatR7(r30),r7
+	sw	rdDatR31(r30),r31
+
+;	From here on:
+;	r1= temp
+;	r2= ->Next char in input buffer
+;	r3= temp
+;	r4= loop counter for NrLines
+;	r5= ->Next element of DataArray
+;	r6= Count of items in DataArray
+
+	add	r5,r1,r0		;r5:= ->DataArray
+	add	r6,r0,r2		;r6:= NrLines
+	add	r7,r0,r0		;r7:= DataCount
+
+;	Read next line
+
+readData1:
+	addui	r1,r0,Prompt		;Print prompt
+	jal	strPut
+
+	addi	r1,r30,rdDatBuf		;r1:= ->Buffer
+	addui	r2,r0,KeyBuf		;r2:= Sizeof(Buffer)
+	jal	strGet			;Get a line from the keyboard
+	addi	r2,r30,rdDatBuf		;r2:= ->Buffer
+
+;	Convert first number
+
+	jal	strToInt		;Convert the next number
+	lhi	r3,16#8000		;ILLEGAL?
+	sequ	r3,r3,r1
+	bt	r3,readData2		;Yes, ignore it
+
+	sw	0(r5),r1		;Store it
+	addui	r5,r5,4			;Point to next locn
+	addui	r7,r7,1			;Incr DataCount
+readData2
+
+;	Skip spaces up to comma
+
+readData2a
+	lb	r1,(r2)			;Space?
+	seqi	r3,r1," "
+	bf	r3,readData2b		;No	
+
+	addui	r2,r2,1			;Yes, step over it
+	j	readData2a		;...and repeat
+
+;	Check for comma
+
+readData2b
+	seqi	r3,r1,","		;Comma?
+	bf	r3,readData3		;Ignore remainder of line
+
+	addui	r2,r2,1			;Step over comma	
+
+;	Convert second number
+
+	jal	strToInt		;Convert the next number
+	lhi	r3,16#8000		;ILLEGAL?
+	sequ	r3,r3,r1
+	bt	r3,readData3		;Yes, ignore it
+
+	sw	0(r5),r1		;Store it
+	addui	r5,r5,4			;Point to next locn
+	addui	r7,r7,1			;Incr DataCount
+readData3:
+
+;	Done enough?
+
+	subui	r6,r6,1			;Done enough lines?
+	bnez	r6,readData1		;No
+	addu	r1,r7,r0		;yes, r1:= DataCount	
+
+;	Clean up
+
+	lw	r31,rdDatR31(r30)		;Restore registers
+	lw	r7,rdDatR7(r30)
+	lw	r6,rdDatR6(r30)
+	lw	r5,rdDatR5(r30)
+	lw	r4,rdDatR4(r30)
+	lw	r3,rdDatR3(r30)
+	add	r14,r30,r0		;Destroy stack frame
+	lw	r30,-4(r14)
+	jr	r31			;And exit
+
+	.seg	Constant
+Prompt	.ascii	"# \0 "

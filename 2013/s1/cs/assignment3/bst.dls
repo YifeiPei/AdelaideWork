@@ -1,0 +1,156 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                           ;
+;   insert  Insert a new node in a binary search tree       ;
+;   infix   Infix prints the values in a binary search tree ;
+;                                                           ;
+;   Yifei Pei a1611648                                      ;
+;                                                           ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    
+        .import div
+        .import divU
+        .import init
+        .import put
+        .import get
+        .import main
+        .import bstValue
+        .import bstLeft
+        .import bstRight
+        .import newNode
+        .import readData
+        .import strPut
+        .import intToStr
+
+        .seg    Constant
+
+CR      .equ    16#0D
+LF      .equ    16#0A
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                           ;
+;   insert  Insert a new node in a binay search tree        ;
+;                                                           ;
+;                                                           ;
+;   Entry   0(r14)= ->Pointer to the root of a binary tree  ;
+;           4(r14)= Number to be added to the tree          ; 
+;           jal insert                                      ;
+;                                                           ;
+;   Result  r1 = ->Pointer to the root of the binary tree   ;
+;                                                           ;
+;   Uses    r1                                              ;
+;                                                           ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .export insert
+
+insR2   .space  4
+insR3   .equ    -8
+insR4   .equ    -12
+insR31  .equ    -16
+insSize .equ    24
+
+        .seg    Code
+
+insert  sw      -4(r14),r30
+        mov     r30,r14
+        subui   r14,r14,insSize
+        sw      insR2,r2
+        sw      insR3(r30),r3
+        sw      insR4(r30),r4
+        sw      insR31(r30),r31
+
+        lw      r1,0(r30)             ;assign r1 to the tree
+        lw      r2,4(r30)             ;assign r2 to be the inserted value
+
+        beqz    r1,new                ;if the tree is empty, creat new
+
+        lw      r3,bstValue(r1)       ;r3 = tree.value
+        sle     r3,r2,r3              ;compare the inserted value and tree.value
+        bt      r3,right              ;if n <= tree.value, go to right
+                                      ;if not, go to left
+left    sw      4(r14),r2             ;save r2
+        add     r4,r0,r1              ;save r1
+        lw      r1,bstLeft(r1)        ;r1->tree.left
+        sw      0(r14),r1             ;save in stack
+        jal     insert                ;recursion
+        sw      bstLeft(r4),r1        ;put everything back
+        add     r1,r0,r4
+        j       insEnd
+
+right   sw      4(r14),r2             ;the same as left
+        add     r4,r0,r1
+        lw      r1,bstRight(r1)
+        sw      0(r14),r1
+        jal     insert
+        sw      bstRight(r4),r1
+        add     r1,r0,r4
+        j       insEnd
+
+new     mov     r1,r2                 ;creat the new node
+        jal     newNode
+
+insEnd  lw      r2,insR2
+        lw      r3,insR3(r30)
+        lw      r4,insR4(r30)
+        lw      r31,insR31(r30)
+        mov     r14,r30
+        lw      r30,-4(r14)
+	jr	r31
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                           ;
+;   infix   Infix prints the values in a binary search tree ;
+;           in infix order.                                 ;
+;                                                           ;
+;                                                           ;
+;   Entry   0(r14)= ->Pointer to the root of a binary tree  ;
+;           jal infix                                       ;
+;                                                           ;
+;   Uses    r1                                              ;
+;                                                           ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+        .export infix                   
+
+infR2   .space  4
+infR3   .equ    -8
+string  .equ    -12
+infR31  .equ    -16
+infSize .equ    20
+
+        .seg    Code
+
+infix   sw      -4(r14),r30             
+        mov     r30,r14
+        subui   r14,r14,infSize
+        sw      infR2,r2
+        sw      infR3(r30),r3
+        sw      infR31(r30),r31
+
+        lw      r3,0(r30)               ;if the tree == null
+        beqz    r3,infEnd               ;go to the end
+
+        lw      r1,bstLeft(r3)          ;infix(tree.left)
+        sw      0(r14),r1               ;save in stack
+        jal     infix                   ;recursion
+                                        
+        lw      r1,bstValue(r3)         ;r1 = tree.value
+        addi    r2,r30,string           ;r2 to hold the string
+        jal     intToStr                ;transfer int value to string
+        addi    r1,r30,string           ;r1 = string
+        jal     strPut                  ;print
+        addi    r1,r0,CR
+        jal     put
+        addi    r1,r0,LF
+        jal     put
+
+        lw      r1,bstRight(r3)         ;infix(tree.right) same as left
+        sw      0(r14),r1
+        jal     infix
+
+infEnd  lw      r31,infR31(r30)
+        lw      r2,infR2
+        lw      r3,infR3(r30)
+        mov     r14,r30
+        lw      r30,-4(r14)
+	jr	r31

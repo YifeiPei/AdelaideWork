@@ -1,0 +1,76 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       put     Displays a character on the screen                            ;
+;                                                                             ;
+;       Entry   r1= Char                                                      ;
+;               jal Put                                                       ;
+;                                                                             ;
+;       Uses    none                                                          ;
+;                                                                             ;
+;       Written D Knight and P Ashenden 29-Mar-2000                           ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	.export	put
+
+	.seg	Code
+	.align	2
+
+DSPCTRL .equ	16#FFFF_FF08
+DSPDATA	.equ	16#FFFF_FF0C
+
+putR2	.equ	0
+putSiz	.equ	4
+
+put	subui	r14,r14,putSiz		;Allocate stack space
+	sw	putR2(r14),r2		;Save r2
+
+put1	lw	r2,DSPCTRL		;Display ready?
+	andi	r2,1<<7		 
+	bf	r2,put1			;No, wait
+	sw	DSPDATA,r1		;Display the character
+
+	lw	r2,putR2(r14)		;Restore R2
+	addui	r14,r14,putSiz		;Deallocate stack space
+	jr	r31			;Return
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;                                                                             ;
+;       get     Get a character from the Keyboard                             ;
+;                                                                             ;
+;       Entry   jal get                                                       ;
+;                                                                             ;
+;       Exit    r1= Char                                                      ;
+;                                                                             ;
+;       Uses    r1                                                            ;
+;                                                                             ;
+;       Written D Knight and P Ashenden 29-Mar-2000                           ;
+;                                                                             ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+	.export	get
+
+	.seg	Code
+	.align	2
+
+KBDCTRL	.equ	16#FFFF_FF00
+KBDDATA	.equ	16#FFFF_FF04
+
+getR2	.equ	0
+getSiz	.equ	4
+
+get	subui	r14,r14,getSiz		;Allocate stack space
+	sw	getR2(r14),r2		;Save r2
+
+get1	lw	r2, KBDCTRL		;Character available?
+	andi	r2, 1<<7
+	bf	r2, get1		;No, wait
+	lw	r1, KBDDATA		;get the character
+
+	lw	r2,getR2(r14)		;Restore R2
+	addui	r14,r14,getSiz		;Deallocate stack space
+	jr	r31
+
+
