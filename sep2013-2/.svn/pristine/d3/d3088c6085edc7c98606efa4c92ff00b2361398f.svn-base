@@ -1,0 +1,114 @@
+package robotMotorSensorControl;
+
+import java.io.IOException;
+
+import robotSideCommsUnit.RobotCommunication;
+import lejos.nxt.LCD;
+import lejos.robotics.navigation.DifferentialPilot;
+import lejos.util.Delay;
+
+public class LineFollower extends Thread {
+	private RobotBehaviourControl callingMethod;
+	private DifferentialPilot pilot;
+	private SensorInfo sensor;
+	
+	//line follower data
+	private int blackVal = 40; // light sensor black value
+	private int whiteVal = 51; // light sensor white value
+	private int midVal = (blackVal + whiteVal)/2; // light sensor mid value
+	private int error = 0; // difference between current sensor value and midVal
+	private double turnRate; // rate of turning
+	private int lightSensorRange = 0; //range of values light sensor can take
+	private final int steeringCoefficient = 2; //the coefficient that determines
+												 //how fast the robot turns relative to the error
+	private double normalisedError = 0.0; // error as a percentage of the lightSensorRange
+	private int [] scan = new int[200]; // line-scanner data-structure
+	private int index;
+	private int width = 0;
+	private volatile boolean reachedVertex = false;
+	private int distanceToTravel;
+	private int distanceTravelled;
+	
+	public LineFollower(DifferentialPilot df, SensorInfo si, RobotBehaviourControl rbc){
+		pilot = df;
+		sensor = si;
+		callingMethod = rbc;
+		distanceTravelled = 0;
+	}
+	
+	public void setDistance(int distance){
+		distanceToTravel = distance;
+	}
+	
+	public void terminate(){
+		reachedVertex = false;
+	}
+	
+	public void run(){
+
+		//initialise scan data-structure
+		for(int i = 0; i < scan.length; i++){
+			scan[i] = 0;
+		}
+
+		reachedVertex = (distanceToTravel == 0);
+
+		while(!reachedVertex){
+			pilot.forward(); //go forward
+			error = midVal - sensor.getLightValue();
+			normalisedError = (Integer.valueOf(error).doubleValue()/(lightSensorRange/2))*100;
+			turnRate = normalisedError * steeringCoefficient;
+			pilot.steer(turnRate); //steer proportionately to the error
+			distanceTravelled = (int) pilot.getMovement().getDistanceTraveled() - distanceTravelled;
+			distanceToTravel = distanceToTravel - distanceTravelled;
+			
+			if((sensor.getLightValue() < blackVal) || (sensor.getLightValue() == whiteVal)){
+				//scan line to test if it is an intersection
+				pilot.rotate(20);
+				pilot.setRotateSpeed(20); // rotate speed = 20deg/sec = 20deg/1000ms, so ...
+				pilot.rotate(-40, true);
+				index = 0;
+				while(pilot.isMoving()){
+					if(index < scan.length){
+						scan[index] = sensor.getLightValue();
+						LCD.drawInt(scan[index], 0, 0);
+						index++;
+						Delay.msDelay(50); //... read one value every 50ms (20/1000=50)
+					}
+					else
+						break;
+				}
+				pilot.rotate(20);
+				//width will determine: line or intersection?
+				width = 0;
+				for(int i = 0; i < scan.length; i++){
+					if(scan[i] < midVal){
+						width++;
+					}
+				}
+				LCD.clear();
+				LCD.drawInt(width, 0, 0);
+				Delay.msDelay(1000);
+				
+				//reset scan
+				for(int i = 0; i < scan.length; i++){
+					scan[i] = 0;
+				}
+				
+				if(width >= 170){
+					//then it is an intersection, so stop
+					reachedVertex = true;
+				}
+			}
+			
+			if(distanceToTravel <= 0){
+				reachedVertex = true;
+			}
+		}
+		try {
+			callingMethod.setCommand(18);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}

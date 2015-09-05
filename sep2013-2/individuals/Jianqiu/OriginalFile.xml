@@ -1,0 +1,45 @@
+<closure-map units="metres">
+<attribute>
+<key>Creation Date</key>
+<value>01/01/2013</value>
+</attribute>
+<boundary>
+<rect x="0" y="0" width="240" height="180"/>
+</boundary>
+<robot-status>
+<attribute>
+<key>facing</key>
+<value>90</value>
+</attribute>
+<point x="120" y="0"/>
+</robot-status>
+<zone state="unexplored">
+<area>
+<rect x="0" y="41" width="240" height="139"/>
+</area>
+</zone>
+<zone state="disaster">
+<area>
+<circle x="70" y="40" radius="10"/>
+</area>
+</zone>
+<structures>
+<road>
+<point x="120" y="0"/>
+<point x="120" y="40"/>
+</road>
+<road>
+<point x="80" y="40"/>
+<point x="160" y="40"/>
+</road>
+<intersection>
+<point x="120" y="40"/>
+</intersection>
+<obstacle>
+<point x="160" y="40"/>
+</obstacle>
+<closure>
+<point x="80" y="40"/>
+</closure>
+</structures>
+</closure-map>

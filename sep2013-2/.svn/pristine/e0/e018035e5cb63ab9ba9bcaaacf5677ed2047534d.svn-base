@@ -1,0 +1,70 @@
+%%%%%%Agenda for client meeting Monday 9 September 2013. Prepared by Yifei Pei 09/09/13.
+\documentclass[11pt, a4paper]{article}
+\usepackage{times}
+\usepackage{ifthen}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{setspace}
+
+%%% page parameters
+\oddsidemargin 0 cm
+\evensidemargin 0 cm
+\textwidth 16 cm
+\topmargin -2.5 cm
+\textheight 25.5 cm
+
+\renewcommand{\baselinestretch}{1.4}\normalsize
+\setlength{\parskip}{0pt}
+
+
+\begin{document}
+
+%%%mention the number, time, and venue of the meeting
+\noindent The {\em fifth} client meeting for Software Engineering Group 2. {\em Weekly} project meeting will be held in {\bf BCS Software Lab, Room 462, Ingkarni Wardli} at {\bf 2:30pm every Monday}.
+
+
+\vspace*{15pt}
+
+\begin{center}
+\huge \bf Agenda
+\end{center}
+
+
+
+\section*{Chair: Matthew Nestor \large (a1132338)}
+
+\vspace*{15pt}
+
+\section{Absent}
+
+None.
+
+%%%if some students cannot make the meeting due to some reasons, their names should appear here.
+%%%\section{Apologies}
+%%%Student name and ID number
+
+%%%short presentation about the work of previous week or any milestone specified in the course.
+\section{Presentation}
+
+\begin {enumerate}
+
+\item Abdulaziz Alhulayfi (1642362) is going to make a presentation about SPMP
+
+\item  Bowen Tao (1622211) will show the milestone 7 to the client
+
+\end {enumerate}
+%%%any schedules for this meeting should go next, each with a separate section.
+%%%for example, the first meeting is about requirement elicitation, like the following.
+
+%%%if there are more subissues, make them as subsections.
+\section{System Design Negotiation}
+
+Matthew Nestor (a1132338) will show the design of Software Architecture to ask the client for recommendations.
+
+%%%finally, specifies time of next meeting
+\section{Date of Next Meeting}
+\noindent Next meeting to be held on Monday 16 September 2013 at 2:30pm.
+
+
+\end{document}

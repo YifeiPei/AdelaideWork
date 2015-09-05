@@ -1,0 +1,195 @@
+%%%%%%Agenda for meeting Monday 12 August 2013. Prepared by Yifei Pei 9/8/13.
+\documentclass[11pt, a4paper]{article}
+\usepackage{times}
+\usepackage{ifthen}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{setspace}
+
+%%% page parameters
+\oddsidemargin 0 cm
+\evensidemargin 0 cm
+\textwidth 16 cm
+\topmargin -2.5 cm
+\textheight 25.5 cm
+
+\renewcommand{\baselinestretch}{1.4}\normalsize
+\setlength{\parskip}{0pt}
+
+
+\begin{document}
+
+%%%mention the number, time, and venue of the meeting
+\noindent The {\em first} Software Engineering Group 2 (PG) Project {\em weekly} meeting will be held in {\bf BCS Software Lab, Room 462, Ingkarni Wardli} at {\bf 2:30pm on Monday 12 August 2013}.
+
+
+\vspace*{15pt}
+
+\begin{center}
+\huge \bf Agenda
+\end{center}
+
+
+
+\section*{Chair: Yifei Pei \large (a1611648)}
+
+\vspace*{15pt}
+
+%%%if some students cannot make the meeting due to some reasons, their names should appear here.
+%%%\section{Apologies}
+%%%Student name and ID number
+
+%%%short presentation about the work of previous week or any milestone specified in the course.
+\section{Presentation}
+Yifei Pei (a1611648) will introduce the group and present the group poster.
+
+%%%any schedules for this meeting should go next, each with a separate section.
+%%%for example, the first meeting is about requirement elicitation, like the following.
+\section{Requirements Elicitation}
+
+\vspace*{10pt}
+
+%%%if there are more subissues, make them as subsections.
+\subsection{Elicitation of Functional Requirements}
+
+\begin{enumerate}
+
+\item Is the robot intended for use in one specific site, or will it be a more general solution that should be able to handle a range of sites?
+
+\vspace*{10pt}
+
+\item To what extent should the robot's operation be automated? Does the robot need to move with or without the operator's control? Does the robot need operator's command to mark road closures?
+
+\vspace*{10pt}
+
+\item What kind of controller interface - for example, a graphical user interface (GUI) - will be required for the operator? What should the GUI look like? To what extent will operators be able to be trained in the use of the robot and its controls?
+
+\vspace*{10pt}
+
+\item Will the operator be on site with the robot, or will the robot be operated remotely?
+
+\vspace*{10pt}
+
+\item How does the robot identify whether the area is dangerous or not? What
+are the representatives of dangerous areas? Normally what's the size or shape of dangerous area?
+
+\vspace*{10pt}
+
+\end{enumerate}
+ 
+
+\subsection{Elicitation of Design Requirements}
+
+\begin{enumerate}
+
+\item Representation of site 
+
+\vspace*{10pt}
+
+Followed the question of last section, what are the representatives of dangerous areas?
+
+\vspace*{10pt}
+
+Roads: What is the narrowest/widest expected width? How about the length?
+
+\vspace*{10pt}
+
+Obstacles: What are the shapes of obstacles? Are obstacles going to be on roads or not? What's the height/length/thickness of obstacles? What's the reflection of robot when it reaches an obstacle?
+
+\vspace*{10pt}
+
+Except for roads and obstacles, what else can be found in the city? Are there walls? Buried buildings? Are there any other features  that the robot will need to recognise and plot?
+
+\vspace*{10pt}
+
+- If there are above-ground walls: How does the robot identify walls? What will be the height and thickness of the above-ground walls? (minimum and maximum)
+
+\vspace*{10pt}
+
+- If there are buried walls/foundations: How will buried walls/foundations be represented? Is there a guaranteed weight or thickness of this representation?
+
+\vspace*{10pt}
+
+- Distinction of different structures?
+
+\vspace*{10pt}
+
+\item Hardware
+
+- What kind of hardware will the controller be run on? 
+
+\vspace*{10pt}
+
+- What's the permitted communication instantness for the hardware?
+
+\vspace*{10pt}
+
+\item Safety
+
+- What action should the robot take when power is low or lost?
+
+\vspace*{10pt}
+
+- What action should the robot take when communication between robot and controller is lost?
+
+\vspace*{10pt}
+
+- What is a 'safe' force for the robot to make contact with external objects? Are there any other factors that need to be considered in order to protect the city?
+
+\vspace*{10pt}
+
+- How do you define a 'safe starting position' for the robot?
+
+\vspace*{10pt}
+
+\end{enumerate}
+
+
+\subsection{Elicitation of Implementation Requirements}
+
+\begin{enumerate}
+
+\item Construction of map in 'real time'
+
+\vspace*{10pt}
+
+How critical is the immediacy of the map feed? What sort of delay or lag will be acceptable?
+
+\vspace*{10pt}
+
+\end{enumerate}
+
+\subsection{Any other requirements/queries that arise during discussion.}
+
+\vspace*{10pt}
+
+%%%more issues should make it like the above one.
+\section{Any Other Issues}
+\subsection{Organisational issues}
+
+\begin{enumerate}
+
+\item Other timing considerations 
+\vspace*{10pt}
+
+When will the group have access to the SVN repository?
+\vspace*{10pt}
+
+When will the group have access to the robot?
+\vspace*{10pt}
+
+When will the DTD (Document Type Definition) for the XML markup be available?
+\vspace*{10pt}
+
+\item Communications
+\vspace*{10pt}
+
+It is proposed that the group maintain contact with the clients via weekly half-hour meetings. Any other media for communication?
+\end{enumerate}
+%%%finally, specifies time of next meeting
+\section{Date of Next Meeting}
+\noindent Next meeting to be held on Monday 19 August 2013 at 2:30pm.
+
+
+\end{document}

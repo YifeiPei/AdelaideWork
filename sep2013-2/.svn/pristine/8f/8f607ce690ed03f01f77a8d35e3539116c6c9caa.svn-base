@@ -1,0 +1,280 @@
+package hostSideCommsUnit;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+
+import java.util.Timer;
+import java.util.TimerTask;
+
+import lejos.nxt.LCD;
+import lejos.pc.comm.NXTComm;
+import lejos.pc.comm.NXTCommException;
+import lejos.pc.comm.NXTCommFactory;
+import lejos.pc.comm.NXTCommLogListener;
+import lejos.pc.comm.NXTConnector;
+import lejos.pc.comm.NXTInfo;
+
+/**
+ * this class is used to directly communicate with the robot.
+ * @fileName PCComms
+ * @author Yu Hong
+ *
+ */
+public class PCComms extends Thread implements Comms {
+	PCReceiver receiver;
+	NXTComm nxtComm;
+	NXTInfo[] nxtInfo;
+	NXTConnector connector;
+	static String name = null;
+	DataInputStream dis;
+	DataOutputStream dos;
+	private int getInfo;
+	private int sendInfo;
+	private int b;
+	private volatile boolean finished = false;
+	private Timer timeOutTimer;
+	private Timer getRobotData;
+	private Timer batteryTimer;
+	private ActionListener timeOutTask;
+	private ActionListener getDataTask;
+
+	/**
+	 * constructor of the class
+	 * @param robotName the configured name of the robot
+	 */
+	public PCComms(String robotName, PCReceiver receive){
+		this.name = robotName;
+		receiver = receive;
+	}
+
+	/**
+	 * to establish the connection between the PC and Robot directly.
+	 * @return a boolean value that indicates whether the connection
+	 * is established or not.
+	 * @throws NXTCommException
+	 */
+	public boolean isconnected() throws NXTCommException{
+		connector = new NXTConnector();
+		boolean connected = connector.connectTo("btspp://");
+		if (connected == false){
+			System.err.println("Failed to connect to any NXT");
+			return connected;
+		}
+		else{
+			System.err.println("succeed in connecting to any NXT");
+			dis = new DataInputStream(connector.getInputStream());
+			dos = new DataOutputStream(connector.getOutputStream());
+		}
+		return connected;
+	}
+
+	/**
+	 * to send the command to the robot
+	 * @param command the concrete command represented by integers
+	 * @throws IOException
+	 */
+	public void sendMessage(int command) throws IOException{
+		StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+		/*
+		System.out.println("Calling method: "+stackTraceElements[0]);
+		System.out.println("Calling method: "+stackTraceElements[1]);
+		System.out.println("Calling method: "+stackTraceElements[2]);
+		System.out.println("Calling method: "+stackTraceElements[3]);
+		System.out.println("Calling method: "+stackTraceElements[4]);
+		 */
+		sendInfo = command;
+		//System.out.println("102");
+		dos.writeInt((sendInfo));
+		//System.out.println("104");
+		dos.flush();
+		//System.out.println("106");
+		System.out.println("Sending: "+ command);
+	}
+
+
+	/**
+	 * the thread method used to receive the message from Robot.
+	 */
+	public void run(){
+		timeOutTimer = new Timer("timeOutTimer");
+		getRobotData = new Timer("getRobotData");
+		batteryTimer = new Timer("batteryTimer");
+		timeOutTimer.schedule(new timeOutTask(), 10000);
+		getRobotData.schedule(new SensorRequestTask(), 0, 200);
+		batteryTimer.schedule(new BatteryInfoTask(), 0, 30*1000);
+		finished = false;
+		while (finished == false){
+			try {
+				while(true){
+					if((b = dis.readInt()) != -1){
+						System.out.println("dis.readInt() = "+b);
+						timeOutTimer.cancel();
+						timeOutTimer.purge();
+						timeOutTimer = new Timer();
+						timeOutTimer.schedule(new timeOutTask(), 10000);
+						getInfo = b;
+						receiver.messageHandler(getInfo);
+						System.out.println("    receiving: "+ getInfo);
+					}else{
+						System.out.println("    dis.readInt() == -1");
+						finished = true;
+					}
+
+					if(finished){
+						System.out.println("    finished == true");
+						timeOutTimer.cancel();
+						timeOutTimer.purge();
+						System.out.println("    timeOutTimer.cancel()");
+						break;
+					}
+				}
+			} catch (EOFException e) {
+				System.out.println("Caught EOFException! Cancelling timers...");
+				finished = true;
+				timeOutTimer.cancel();
+				timeOutTimer.purge();
+				System.out.println("    timeOutTimer.cancel()");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * the method is used to stop the thread.
+	 */
+	public void stopThread(){
+		System.out.println("entered stopThread()...");
+		StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+		System.out.println("Calling method: "+stackTraceElements[0]);
+		System.out.println("Calling method: "+stackTraceElements[1]);
+		System.out.println("Calling method: "+stackTraceElements[2]);
+		System.out.println("Calling method: "+stackTraceElements[3]);
+		System.out.println("Calling method: "+stackTraceElements[4]);
+		getRobotData.cancel();
+		getRobotData.purge();
+		System.out.println("getRobotData.cancel() done.");
+		batteryTimer.cancel();
+		batteryTimer.purge();
+		System.out.println("batteryTimer.cancel() done.");
+		finished = true;
+		System.out.println("finished = true done.");
+		try {
+			this.join();
+			System.out.println("this.join() done.");
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void cancelConnection(){
+		try {
+			getRobotData.cancel();
+			getRobotData.purge();
+			System.out.println("getRobotData.cancel() done.");
+			batteryTimer.cancel();
+			batteryTimer.purge();
+			System.out.println("batteryTimer.cancel() done.");
+			Thread.sleep(11000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		System.out.println("leaving cancelConnection()...");
+	}
+
+	/**
+	 * the method called by timer to cancel the connection
+	 */
+	private void disconnect(){
+		try {
+			this.sendMessage(-2);
+			System.out.println("Robot disconnect message sent.");
+			dis.close();
+			System.out.println("dis.close() done.");
+			this.stopThread();
+			System.out.println("stopThead(boolean) done.");
+			dos.close();
+			System.out.println("dos.close() done.");
+			connector.close();
+			System.out.println("connector.close() done.");
+
+		} catch (IOException ioe) {
+			System.err.println("IOException closing connection:");
+			ioe.printStackTrace();
+		}
+	}
+
+	/**
+	 *	to send the sensor request to the robot 
+	 *	according to the timer
+	 *
+	 */
+	private class SensorRequestTask extends TimerTask{
+
+		@Override
+		/**
+		 * to send to light and tacho sensor request to the robot
+		 */
+		public void run() {
+			// TODO Auto-generated method stub
+			try {
+				PCComms.this.sendMessage(12);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				//communication.sendMessage(GETANGEL);
+				PCComms.this.sendMessage(17);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				PCComms.this.sendMessage(15);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+	}
+	/**
+	 *	to send the battery level request to the robot 
+	 *	according to the timer
+	 *
+	 */
+	private class BatteryInfoTask extends TimerTask{
+
+		@Override
+		/**
+		 * to send the battery level request to the robot
+		 */
+		public void run() {
+			// TODO Auto-generated method stub
+			try {
+				PCComms.this.sendMessage(11);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}	
+	}
+
+	private class timeOutTask extends TimerTask{
+		@Override
+		//safety measure: disconnect if no data is received before timeout
+		public void run(){
+			disconnect();
+			try {
+				receiver.connectionFailure();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+}

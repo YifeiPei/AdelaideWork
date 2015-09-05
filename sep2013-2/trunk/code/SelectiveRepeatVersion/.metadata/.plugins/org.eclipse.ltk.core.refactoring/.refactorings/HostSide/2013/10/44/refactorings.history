@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;HostSide/UML_Diagrams/model.ucls&apos; to &apos;artificialIntelligenceUnit.ucls&apos;" description="Rename resource &apos;model.ucls&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="UML_Diagrams/model.ucls" name="artificialIntelligenceUnit.ucls" stamp="1383023802652" updateReferences="true"/>
+</session>

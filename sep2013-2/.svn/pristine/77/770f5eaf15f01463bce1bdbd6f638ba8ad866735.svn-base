@@ -1,0 +1,350 @@
+package artificialIntelligenceUnit;
+
+import java.awt.Point;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Set;
+
+import mapDataStructure.Map;
+//import java.awt.*;
+
+/**
+ * @author Matthew Nestor
+ * @filename Graph.java
+ * @package artificialIntelligenceUnit
+ * @project HostSide
+ * @date 16/10/2013
+ */
+
+public class Graph{
+	private Map map;
+	private ArrayList<Vertex> vertices;
+	private ArrayList<Vertex> solution;
+	private int width;
+	private int height;
+
+	public Graph(Map m){
+		map = m;
+		height = map.getHeight();
+		width = map.getWidth();
+		vertices = new ArrayList<Vertex>();
+	}
+
+	public Vertex addVertex(int index, Point p){
+		Vertex newVertex = new Vertex(index, p);
+		vertices.add(newVertex);
+		return newVertex;
+	}
+
+	public Edge addEdge(int fromVertex, int toVertex, int weight, String action){
+		Vertex v1 = vertices.get(fromVertex);
+		Vertex v2 = vertices.get(toVertex);
+		Edge e = new Edge(weight,v1,v2,action);
+		v1.addEdge(e);
+		return e;
+	}
+
+	public void removeEdge(Edge e){
+		removeEdge(e.fromVertex(),e.toVertex());
+	}
+
+	public void removeEdge(Vertex fromVertex, Vertex toVertex){
+		if(containsEdge(fromVertex,toVertex)){
+			fromVertex.removeEdge(toVertex);
+		}
+	}
+
+	public Vertex getVertex(int x, int y){
+		return vertices.get(x*width + y);
+	}
+
+	public LinkedList<Edge> outEdgesOf(Vertex v){
+		return v.outEdgesOf();
+	}
+
+	public boolean containsVertex(int r, int c){
+		if(r >= height || c >= width)
+			return false;
+		else if(r*c >= 0 && (r*width + c) < getSize())
+			return true;
+		else
+			return false;
+	}
+
+	public boolean containsEdge(Edge e){
+		return containsEdge(e.fromVertex(),e.toVertex());
+	}
+
+	public boolean containsEdge(Vertex fromVertex, Vertex toVertex){
+		LinkedList<Edge> outEdges = fromVertex.outEdgesOf();
+		for(int i = 0; i < outEdges.size(); i++){
+			Edge e = outEdges.get(i);
+			if(e.toVertex()==toVertex)
+				return true;
+		}
+		return false;
+	}
+
+	public Edge getEdge(Vertex fromVertex, Vertex toVertex){
+		LinkedList<Edge> outEdges = fromVertex.outEdgesOf();
+		for(int i = 0; i < outEdges.size(); i++){
+			Edge e = outEdges.get(i);
+			if(e.toVertex()==toVertex)
+				return e;
+		}
+		return null;
+	}
+
+	public ArrayList<Vertex> getVertices(){
+		return vertices;
+	}
+
+	public int getHeight(){
+		return height;
+	}
+
+	public int getWidth(){
+		return width;
+	}
+
+	public int getSize(){
+		return height*width;
+	}
+
+	public int calcWeight(int w1, int w2){
+		if((w2 - w1) > 0)
+			return 1 + w2 - w1;
+		else
+			return 1;
+	}
+
+	public ArrayList<String> actions(Vertex state){
+		boolean hasNorth = false;
+		boolean hasSouth = false;
+		boolean hasWest = false;
+		boolean hasEast = false;
+		ArrayList<String> theActions = new ArrayList<String>();
+		LinkedList<Edge> edges = state.outEdgesOf();
+		for(Edge e: edges){
+			if(e.getAction().equals("NORTH"))
+				hasNorth = true;
+			else if(e.getAction().equals("SOUTH"))
+				hasSouth = true;
+			else if(e.getAction().equals("WEST"))
+				hasWest = true;
+			else if(e.getAction().equals("EAST"))
+				hasEast = true;
+		}
+		if(hasNorth)
+			theActions.add("NORTH");
+		if(hasSouth)
+			theActions.add("SOUTH");
+		if(hasWest)
+			theActions.add("WEST");
+		if(hasEast)
+			theActions.add("EAST");
+		return theActions;
+	}
+
+	public Vertex result(Vertex state, String action){
+		if(action.equals("UP")){
+			if(containsVertex((int)(state.getCoordinate().getX()-1), (int)state.getCoordinate().getY()))
+				return getVertex(((int)state.getCoordinate().getX()-1), (int)state.getCoordinate().getY());
+			else
+				return null;
+		}
+		else if(action.equals("DOWN")){
+			if(containsVertex((int)(state.getCoordinate().getX()+1), (int)state.getCoordinate().getY()))
+				return getVertex((int)(state.getCoordinate().getX()+1), (int)state.getCoordinate().getY());
+			else
+				return null;
+		}
+		else if(action.equals("LEFT")){
+			if(containsVertex((int)state.getCoordinate().getX(), (int)(state.getCoordinate().getY()-1)))
+				return getVertex((int)state.getCoordinate().getX(), (int)(state.getCoordinate().getY()-1));
+			else
+				return null;
+		}
+		else if(action.equals("RIGHT")){
+			if(containsVertex((int)state.getCoordinate().getX(), (int)(state.getCoordinate().getY()+1)))
+				return getVertex((int)state.getCoordinate().getX(), (int)(state.getCoordinate().getY()+1));
+			else
+				return null;
+		}
+		else
+			return null;
+	}
+
+	public int stepCost(Vertex state, String action){
+		LinkedList<Edge> edges = state.outEdgesOf();
+		for(Edge e: edges){
+			if(e.getAction().equals(action))
+				return e.getWeight();
+		}
+		return 0;
+	}
+
+	public Node childNodeOf(Node parent, String action, int priorityCount){
+		Node childNode = new Node(result(parent.getState(), action),
+				parent, action, priorityCount,
+				parent.getPathCost()+stepCost(parent.getState(), action));
+		return childNode;
+	}
+
+	public boolean goalTest(Vertex initial, Vertex goal){
+		return(initial==goal);
+	}
+
+	public ArrayList<Vertex> solution(Node n, ArrayList<Vertex> solutionSet){
+		solutionSet.add(n.getState());
+		if(n.isInitial())
+			return solutionSet;
+		else
+			return solution(n.getParent(), solutionSet);
+	}
+
+	public ArrayList<Vertex> astar(Point start, Point finish, String heuristic)
+	{
+		int count = 0;
+		Node initial = new Node(getVertex((int)start.getX(), (int)start.getY()), count);
+		Vertex goal = getVertex((int)finish.getX(), (int)finish.getY());
+		euclidean(initial, goal);
+		ArrayList<Vertex> solutionSet = new ArrayList<Vertex>();
+		PriorityQueue<Node> frontier = new PriorityQueue<Node>(100, new AStarComparator());
+		frontier.add(initial);
+		Set<Vertex> explored = new HashSet<Vertex>();
+
+		while(true)
+		{
+			if(frontier.isEmpty())
+				return null;
+			Node n = frontier.poll();
+			if(goalTest(n.getState(), goal))
+				return solution(n, solutionSet);
+			explored.add(n.getState());
+			ArrayList<String> possibleActions = actions(n.getState());
+			for(String s: possibleActions)
+			{
+				count++;
+				Node child = childNodeOf(n, s, count);
+				euclidean(child, goal);
+				if(!explored.contains(child.getState()) &&
+						!frontier.contains(child))
+				{
+					frontier.add(child);
+				}
+				else
+				{
+					boolean costsLess = false;
+					Iterator itr = frontier.iterator();
+					while(itr.hasNext())
+					{
+						Node m = (Node)itr.next();
+						if(m.getState()==child.getState())
+						{
+							if(m.getAStarCost() > child.getAStarCost())
+							{
+								itr.remove();
+								costsLess = true;
+							}
+						}
+					}
+					if(costsLess)
+						frontier.add(child);
+				}
+			}
+		}
+	}
+
+	private void euclidean(Node node, Vertex goal){
+		Point p1 = node.getState().getCoordinate();
+		Point p2 = goal.getCoordinate();
+		double rowDist = Math.abs(p1.getX() - p2.getX());
+		double colDist = Math.abs(p1.getY() - p2.getY());
+		node.getState().setHeuristic(Math.hypot(rowDist, colDist));
+	}
+
+	public void populateGraph(){
+		Point start = map.getRobot().getRobotLocation();
+		
+	}
+	
+	private double dotProduct(Point p1, Point p2){
+		return ((p1.getX()*p2.getX()) + (p1.getY()*p2.getY()));
+	}
+	
+	private double euclideanDistance(Point p1, Point p2){
+		return sqrt( sq(p2.getX() - p1.getX()) + sq(p2.getY() - p1.getY()));
+	}
+	
+	private double sq(double d){
+		return d*d;
+	}
+	
+	private double sqrt(double d){
+		return Math.sqrt(d);
+	}
+	
+	private CollisionResult testCollision(Point A, Point B, Point C, double r){
+		double Ax = A.getX();
+		double Ay = A.getY();
+		double Bx = B.getX();
+		double By = B.getY();
+		double Cx = C.getX();
+		double Cy = C.getY();
+
+		double ABlength = euclideanDistance(A, B);
+
+		double Dx = (Bx-Ax)/ABlength;
+		double Dy = (By-Ay)/ABlength;
+
+		double t = Dx*(Cx-Ax) + Dy*(Cy-Ay);
+
+		double Ex = t*Dx+Ax;
+		double Ey = t*Dy+Ay;
+
+		double EClength = sqrt(sq(Ex-Cx) + sq(Ey-Cy));
+
+		if(EClength < r)
+		{
+			double dt = sqrt(sq(r) - sq(EClength));
+			double Fx = (t-dt)*Dx + Ax;
+			double Fy = (t-dt)*Dy + Ay;
+			double Gx = (t+dt)*Dx + Ax;
+			double Gy = (t+dt)*Dy + Ay;
+			if(euclideanDistance(B, C) <= r){
+				return new CollisionResult(true, new Point2D.Double(Fx, Fy));
+			}
+			else if(euclideanDistance(A, C) <= r){
+				return new CollisionResult(true, new Point2D.Double(Gx, Gy));
+			}
+			else{
+				return new CollisionResult(true, new Point2D.Double(Fx, Fy), new Point2D.Double(Gx, Gy));
+			}
+		}
+
+		else if(EClength == r){
+			return new CollisionResult(true, new Point2D.Double(Ex, Ey));
+		}
+		else{
+			return new CollisionResult(false);
+		}
+	}
+
+	public void print(){
+		if(solution==null)
+			System.out.println("null");
+		else{
+			System.out.print("Solution = {");
+			for(Vertex v: solution){
+				System.out.println(v.getCoordinate().toString());
+			}
+			System.out.println("}");
+		}
+	}
+
+}

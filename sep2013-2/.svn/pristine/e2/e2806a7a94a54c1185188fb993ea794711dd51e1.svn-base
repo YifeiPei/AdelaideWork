@@ -1,0 +1,60 @@
+package robotMotorSensorControl;
+
+import lejos.robotics.navigation.DifferentialPilot;
+
+/**
+ * @author Matthew Nestor
+ * @filename RobotStatusMonitor.java
+ * @package robotMotorSensorControl
+ * @project RobotSide
+ * @date 31/10/2013
+ */
+
+public class RobotStatusMonitor {
+	private DifferentialPilot pilot;
+	private int totalDistanceTravelled;
+	private int incrementDistanceTravelled;
+	private int distanceToTravel;
+	private double newReading;
+	private double oldReading;
+
+	public RobotStatusMonitor(DifferentialPilot df){
+		pilot = df;
+		totalDistanceTravelled = 0;
+		incrementDistanceTravelled = 0;
+		distanceToTravel = 0;
+		newReading = 0;
+		oldReading = 0;
+	}
+
+	public void makeTravelReading(){
+		oldReading = newReading;
+		newReading = pilot.getMovement().getDistanceTraveled();
+		totalDistanceTravelled = (int)newReading;
+		incrementDistanceTravelled = (int)(newReading - oldReading);
+	}
+
+	public void reset(){
+		totalDistanceTravelled = 0;
+		incrementDistanceTravelled = 0;
+		distanceToTravel = 0;
+		newReading = 0;
+		oldReading = 0;
+	}
+
+	public void setDistanceToTravel(int i){
+		distanceToTravel = i;
+	}
+
+	public int getDistanceToTravel(){
+		return distanceToTravel;
+	}
+
+	public int getTotalDistanceTravelled(){
+		return totalDistanceTravelled;
+	}
+
+	public int getIncrementDistanceTravelled(){
+		return incrementDistanceTravelled;
+	}
+}

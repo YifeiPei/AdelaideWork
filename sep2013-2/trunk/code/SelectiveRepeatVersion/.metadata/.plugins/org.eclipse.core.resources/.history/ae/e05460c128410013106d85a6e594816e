@@ -1,0 +1,152 @@
+package artificialIntelligenceUnit;
+
+import java.awt.Point;
+import java.awt.geom.Point2D;
+import java.util.Deque;
+
+import mapDataStructure.Map;
+import controllerFSM.ControllerFSM;
+/**
+ * @author Matthew Nestor
+ * @filename ArtificialIntelligenceFSM.java
+ * @package artificialIntelligenceUnit
+ * @project HostSide
+ * @date 17/10/2013
+ */
+
+public class ArtificialIntelligenceFSM extends Thread{
+	private final int STOP = 0;
+	private final int FORWARD = 1;
+	private final int BACKWARD = 2;
+	private final int TURNLEFT = 3;
+	private final int TURNRIGHT = 4;
+	private final int BATTERYINFO = 11;
+	private final int LIGHTINFO = 12;
+	private final int TACHOINFO_A = 13;
+	private final int TACHOINFO_B = 14;
+	private final int RANGEINFO = 15;
+	private final int GETANGEL = 16;
+	private final int GETDISTANCE = 17;
+	private final int MARK = 20;
+	private final int FOLLOWLINE = 30;
+	private final int DISCONNECTION = -1;
+
+	private Graph graph;
+	private Map map;
+	private ControllerFSM controllerFSM;
+	private Deque<Action> solutionActions;
+	private volatile boolean running;
+	private volatile boolean foundNext;
+
+	public ArtificialIntelligenceFSM(Map m, ControllerFSM cfsm){
+		map = m;
+		graph = new Graph(map);
+		controllerFSM = cfsm;
+		updateGraph();
+	}
+
+	public Graph getGraph(){
+		return graph;
+	}
+
+	public void terminateThread(){
+		running = false;
+	}
+
+	public void foundNext(){
+		foundNext = true;
+	}
+
+	public void sendCommand(int c){
+		controllerFSM.executeCommand(c);
+	}
+
+	public void run(){
+		running = true;
+		foundNext = false;
+		Action nextAction;
+
+		while(running){
+			//get graph instruction stack
+			graph.updateGraph();
+			solutionActions = graph.getActions();
+			//check if the robot needs to go anywhere
+			//if so, foundAll = false;
+			//else foundAll = true;
+			while(!solutionActions.isEmpty()){
+
+				//get current orientation of robot
+				int orientation = map.getRobot().getRobotOrientation();
+				//pop the next action from the instruction stack
+				nextAction = solutionActions.remove();
+				//if necessary, rotate robot
+				if(nextAction.getAction().equals("NORTH")){
+					switch(orientation){
+					case 0:
+						sendCommand(TURNLEFT);
+					case 90:
+						//already at correct orientation; do nothing
+					case 180:
+						sendCommand(TURNLEFT);
+						sendCommand(TURNLEFT);
+					case 270:
+						sendCommand(TURNRIGHT);
+					}
+				}else if(nextAction.getAction().equals("SOUTH")){
+					switch(orientation){
+					case 0:
+						sendCommand(TURNRIGHT);
+					case 90:
+						sendCommand(TURNRIGHT);
+						sendCommand(TURNRIGHT);
+					case 180:
+						sendCommand(TURNLEFT);
+					case 270:
+						//already at correct orientation; do nothing
+					}
+				}else if(nextAction.getAction().equals("EAST")){
+					switch(orientation){
+					case 0:
+						//already at correct orientation; do nothing
+					case 90:
+						sendCommand(TURNRIGHT);
+					case 180:
+						sendCommand(TURNLEFT);
+						sendCommand(TURNLEFT);
+					case 270:
+						sendCommand(TURNLEFT);
+					}
+				}else if(nextAction.getAction().equals("WEST")){
+					switch(orientation){
+					case 0:
+						sendCommand(TURNRIGHT);
+						sendCommand(TURNRIGHT);
+					case 90:
+						sendCommand(TURNLEFT);
+					case 180:
+						//already at correct orientation; do nothing
+					case 270:
+						sendCommand(TURNLEFT);
+					}
+				}
+
+				//send message to robot to take the next action
+				sendCommand(21 + nextAction.getDistance());
+
+				while(!foundNext){
+					//do nothing until robot gets to next vertex
+				}
+				foundNext = false;
+				//repeat
+			}
+		}
+		sendCommand(MARK);
+		sendCommand(STOP);
+		map.addClosure(map.getRobot().getRobotLocation());
+	}
+
+	public void updateGraph(){
+		graph.updateGraph();
+	}
+
+}

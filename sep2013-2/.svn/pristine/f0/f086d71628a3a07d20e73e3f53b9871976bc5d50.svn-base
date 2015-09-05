@@ -1,0 +1,15 @@
+package artificialIntelligenceUnit;
+
+import java.util.ArrayList;
+
+public class ActionList {
+	private ArrayList<Action> actions;
+		
+	public void addAction(Action a){
+		actions.add(a);
+	}
+	
+	public Action getAction(){
+		
+	}
+}

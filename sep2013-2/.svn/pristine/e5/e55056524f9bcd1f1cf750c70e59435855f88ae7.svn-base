@@ -1,0 +1,316 @@
+\documentclass[a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{color}
+\usepackage{listings}
+\lstset{ %
+language=Java,
+basicstyle=\footnotesize,     
+numbers=left,                  
+numberstyle=\footnotesize,   
+stepnumber=1,                  
+numbersep=5pt,               
+backgroundcolor=\color{white},  
+showspaces=false,             
+showstringspaces=false,        
+showtabs=false,                
+frame=single,  
+tabsize=2,   
+captionpos=b,      
+breaklines=true,   
+breakatwhitespace=false,    
+escapeinside={\%*}{*)}        
+}
+
+\oddsidemargin -0.0 cm
+\evensidemargin -1 cm
+\textwidth 15 cm
+\topmargin -2.5 cm
+\textheight 25.5 cm
+
+\begin{document}
+\title{Testing Report}
+\author{Matthew James Nestor\\a1132338\\ \\Group 2}
+
+\maketitle
+\section{Introduction}
+Herein details the testing cases for the Graph class, and where necessary, the classes which
+Graph uses. The Graph class is responsible for creating a graph data-structure
+on the basis of the Map data-structure. It is populated with vertices for all intersections,
+road-ends, road-closures, obstacles, and disaster-zone/road collisions that are reachable
+from the robot's initial position, and edges for all roads which link them. It also
+contains methods that search the graph data-structure, in particular,
+{\bf AStarSearch(Vertex, Vertex)}. Furthermore, it contains methods which link transitions
+between vertices to actions the robot can take (e.g. by supplying a vertex with an action,
+such as travel {\bf NORTH}, the vertex will return the next vertex that would be reached
+if that action were taken, if that vertex exists). The Graph class can be found in the
+below location. All other classes that Graph uses are in the same package, with the exception
+of the Map classes, which are in the package {\bf HostSide.mapDataStructure}.\\
+
+\begin{verbatim}
+https://version-control.adelaide.edu.au/svn/sep2012-2/trunk/code/
+SelectiveRepeatVersion/SEPProject/HostSide/src/artificialIntelligenceUnit/Graph.java
+\end{verbatim}
+
+\section{Testing Description and Rationale}
+All tests were performed using JUnit test cases and designed with the aid of the elcEMMA code coverage tool.
+According to elcEMMA, the JUnit tests cover \%84.3 of the Graph class code, \%81.1 of all code in the
+{\bf artificialIntelligenceUnit} package, and \%40.0 of all code in the HostSide project. Below are the
+test cases, with explanations.
+\begin{enumerate}
+\item {\bf testCollisionCalculation()}: This test case tests the method 
+{\bf Graph.testCollision(Point, Point, Point, double)}.
+In order to populate the graph data-structure, it is necessary to determine which roads, if any, intersect with
+disaster zones, and where those intersections occur. This calculation is performed by
+{\bf Graph.testCollision(Point, Point, Point, double)}.
+\item {\bf testIsInBetween()}: This test case tests the {\bf Graph.isInBetween(Point, Point, Point)} method,
+which tests whether a point lies on a line between two points.
+\item {\bf testAStarSearch()}: This test case tests the {\bf Graph.AStarSearch(Vertex, Vertex)} method, which searches
+the graph data-structure and returns the solution as an {\bf ArrayList<Vertex>}. The solution is the shortest path
+from the LHS argument to the RHS argument, or {\bf null} if no path exists.
+\item {\bf testUpdateGraph()}: This tests the {\bf Graph.updateGraph()}, {\bf Action.getAction()},
+and {\bf Action.getDistance()} methods. {\bf Graph.updateGraph()} updates the classes local variables, then calls
+{\bf Graph.AStarSearch(Vertex, Vertex)}. This returns a {\bf Deque<Action>} object, each {\bf Action}
+in which contains data about the next action the robot must take in order to reach the next goal.
+\item {\bf testMisc()}: Tests for various GET, SET, and REMOVE methods.
+\end{enumerate}
+
+\appendix
+\section{Testing Code: GraphTest.java}
+The testing code can be found in the following location.
+\begin{verbatim}
+https://version-control.adelaide.edu.au/svn/sep2012-2/trunk/code/
+SelectiveRepeatVersion/SEPProject/HostSide/src/artificialIntelligenceUnit/GraphTest.java
+\end{verbatim}
+
+\begin{lstlisting}
+package artificialIntelligenceUnit;
+
+import static org.junit.Assert.*;
+
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
+
+import junit.framework.Assert;
+
+import mapDataStructure.Map;
+import mapDataStructure.RobotMap;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import controllerFSM.ControllerFSM;
+
+/**
+ * @author Matthew Nestor
+ * @filename GraphTest.java
+ * @package artificialIntelligenceUnit
+ * @project HostSide
+ * @date 03/11/2013
+ */
+
+public class GraphTest {
+	private Graph graph;
+	private Map map;
+
+	@Before
+	public void before(){
+		map = new RobotMap();
+		map.loadMap("map6.xml");
+		graph = new Graph(map);
+		graph.initialiseGraph();
+	}
+
+	@Test
+	public void testCollisionCalculation() {
+		graph.print();
+		CollisionResult result = graph.testCollision(new Point(0, 0),
+				new Point(2, 0),
+				new Point(-1, 0),
+				2.0);
+		result.print();
+		Assert.assertEquals(true, result.collision());
+		Assert.assertEquals(false, result.twoCollisions());
+		Assert.assertEquals(new Point(1, 0), result.firstCollision());
+		
+
+		result = graph.testCollision(new Point(0, 0),
+				new Point(2, 0),
+				new Point(3, 0),
+				2.0);
+		result.print();
+		Assert.assertEquals(true, result.collision());
+		Assert.assertEquals(false, result.twoCollisions());
+		Assert.assertEquals(new Point(1, 0), result.firstCollision());
+
+		result = graph.testCollision(new Point(0, 0),
+				new Point(10, 0),
+				new Point(5, 1),
+				2.0);
+		result.print();
+		Assert.assertEquals(true, result.collision());
+		Assert.assertEquals(true, result.twoCollisions());
+		Assert.assertEquals(new Point(3, 0), result.firstCollision());
+		Assert.assertEquals(new Point(6, 0), result.secondCollision());
+
+		result = graph.testCollision(new Point(0, 0),
+				new Point(10, 0),
+				new Point(5, 1),
+				1.0);
+		result.print();
+		Assert.assertEquals(true, result.collision());
+		Assert.assertEquals(false, result.twoCollisions());
+		Assert.assertEquals(new Point(5, 0), result.firstCollision());
+
+		result = graph.testCollision(new Point(10, 0),
+				new Point(10, 10),
+				new Point(10, 20),
+				5.0);
+		result.print();
+		Assert.assertEquals(false, result.collision());
+		Assert.assertEquals(false, result.twoCollisions());
+
+		result = graph.testCollision(new Point(120, 20),
+				new Point(120, 40),
+				new Point(120, 80),
+				27.0);
+		result.print();
+		Assert.assertEquals(false, result.collision());
+		Assert.assertEquals(false, result.twoCollisions());
+
+		result = graph.testCollision(new Point(120, 20),
+				new Point(120, 0),
+				new Point(120, 80),
+				27.0);
+		result.print();
+		Assert.assertEquals(false, result.collision());
+		Assert.assertEquals(false, result.twoCollisions());
+
+		result = graph.testCollision(new Point(120, 40),
+				new Point(120, 80),
+				new Point(120, 80),
+				27.0);
+		result.print();
+		Assert.assertEquals(true, result.collision());
+		Assert.assertEquals(false, result.twoCollisions());
+		Assert.assertEquals(new Point(120, 53), result.firstCollision());
+		
+		result = graph.testCollision(new Point(0, 0),
+				new Point(0, 10),
+				new Point(5, 5),
+				5);
+		result.print();
+		Assert.assertEquals(true, result.collision());
+		Assert.assertEquals(false, result.twoCollisions());
+		Assert.assertEquals(new Point(0, 5), result.firstCollision());
+		
+		result = graph.testCollision(new Point(0, 0),
+				new Point(0, 10),
+				new Point(5, 5),
+				100);
+		result.print();
+		Assert.assertEquals(false, result.collision());
+		Assert.assertEquals(false, result.twoCollisions());
+		
+		result = graph.testCollision(new Point(5, 10),
+				new Point(5, 1),
+				new Point(5, 0),
+				5);
+		result.print();
+		Assert.assertEquals(true, result.collision());
+		Assert.assertEquals(false, result.twoCollisions());
+		Assert.assertEquals(new Point(5, 5), result.firstCollision());
+		
+		result = graph.testCollision(new Point(5, 1),
+				new Point(5, 10),
+				new Point(5, 0),
+				5);
+		result.print();
+		Assert.assertEquals(true, result.collision());
+		Assert.assertEquals(false, result.twoCollisions());
+		Assert.assertEquals(new Point(5, 5), result.firstCollision());
+		
+		result = graph.testCollision(new Point(5, 1),
+				new Point(5, -10),
+				new Point(5, 0),
+				5);
+		result.print();
+		Assert.assertEquals(true, result.collision());
+		Assert.assertEquals(false, result.twoCollisions());
+		Assert.assertEquals(new Point(5, -5), result.firstCollision());
+		
+		result = graph.testCollision(new Point(5, 10),
+				new Point(5, -10),
+				new Point(5, 0),
+				5);
+		result.print();
+		Assert.assertEquals(true, result.collision());
+		Assert.assertEquals(true, result.twoCollisions());
+		Assert.assertEquals(new Point(5, 5), result.firstCollision());
+		Assert.assertEquals(new Point(5, -5), result.secondCollision());
+	}
+
+	@Test
+	public void testIsInBetween(){
+		Assert.assertEquals(true, graph.isInBetween(new Point(120, 20), new Point(120, 40), new Point(120, 40)));
+		Assert.assertEquals(true, graph.isInBetween(new Point(50, 20), new Point(120, 20), new Point(100, 20)));
+		Assert.assertEquals(false, graph.isInBetween(new Point(120, 20), new Point(120, 40), new Point(120, 41)));
+		Assert.assertEquals(false, graph.isInBetween(new Point(120, 20), new Point(120, 40), new Point(100, 38)));
+		Assert.assertEquals(false, graph.isInBetween(new Point(120, 20), new Point(150, 20), new Point(151, 20)));
+		Assert.assertEquals(false, graph.isInBetween(new Point(120, 20), new Point(150, 20), new Point(100, 21)));
+	}
+	
+	@Test
+	public void testAStarSearch(){
+		Vertex start = graph.getInitialVertex();
+		Vertex goal = graph.goals.peek();
+		ArrayList<Vertex> solution = graph.AStarSearch(start, goal);
+		Assert.assertEquals(solution, graph.getSolution());
+		Assert.assertEquals(new Point(29, 28), solution.remove(0).getCoordinate());
+		Assert.assertEquals(new Point(29, 21), solution.remove(0).getCoordinate());
+		Assert.assertEquals(new Point(29, 1), solution.remove(0).getCoordinate());
+	}
+	
+	@Test
+	public void testUpdateGraph(){
+		Deque<Action> actionList = graph.updateGraph(); //calls AStarSearch and returns AStarSearch array
+		Action nextAction = actionList.remove();
+		Assert.assertEquals("NORTH", nextAction.getAction());
+		Assert.assertEquals(20, nextAction.getDistance());
+		nextAction = actionList.remove();
+		Assert.assertEquals("NORTH", nextAction.getAction());
+		Assert.assertEquals(7, nextAction.getDistance());
+		graph.print();
+	}
+	
+	@Test
+	public void testMisc() throws InterruptedException{
+		Vertex start = graph.getInitialVertex();
+		LinkedList<Edge> outEdges = graph.outEdgesOf(start);
+		for(Edge e: outEdges){
+			Vertex v = e.toVertex();
+			Assert.assertEquals(e, graph.getEdge(start, v));
+			Assert.assertEquals(true, graph.containsEdge(e));
+		}
+		Vertex fakeVertex = new Vertex(21, new Point(1, 1));
+		Assert.assertEquals(false, graph.containsEdge(start, fakeVertex));
+		Assert.assertEquals(null, graph.getEdge(start, fakeVertex));
+		Vertex nextVertex = graph.transition(start, "NORTH");
+		graph.removeEdge(start, nextVertex);
+		graph.removeEdge(nextVertex, start);
+		Assert.assertEquals(false, graph.containsEdge(start, nextVertex));
+		Vertex goal = graph.getVertex(new Point(55, 21));
+		Assert.assertEquals(true, goal.isGoal());
+		goal = graph.getVertex(new Point(-1, -2));
+		Assert.assertEquals(null, goal);
+		Vertex v2 = graph.transition(nextVertex, "SOUTH");
+		Assert.assertEquals(null, v2);
+		int tempInt = graph.stepCost(nextVertex, "SOUTH");
+		Assert.assertEquals(-1, tempInt);
+	}
+
+\end{lstlisting}
+\end{document}

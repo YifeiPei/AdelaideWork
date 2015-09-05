@@ -1,0 +1,19 @@
+package artificialIntelligenceUnit;
+
+public class Action {
+	private String action;
+	private int distance;
+	
+	public Action(String s, int i){
+		action = s;
+		distance = i;
+	}
+	
+	public String getAction(){
+		return action;
+	}
+	
+	public int getDistance(){
+		return distance;
+	}
+}

@@ -1,0 +1,74 @@
+% Group: 	2
+% Name: 	Coding Pharaohs
+% Document: 	First draft of the minutes of the second client meeting
+% Author:	Bowen Tao
+% Date:		Monday August 20 2013
+
+\documentclass[12pt, a4paper]{article}
+\topmargin -1cm
+\title{Minutes of the Second Client Meeting}
+\author{\textsc{Coding Pharaohs} (Group 2)}
+\date{August , 2013}
+\begin{document}
+\maketitle
+\begin{tabbing}
+\textbf{Chair}~~~~~~~~\=Abdulaziz Alhulayfi   \\
+\textbf{Secretary}    \>Bowen Tao             \\
+\textbf{Members}      \>Yifei Pei             \\
+                      \>Matthew Nestor        \\
+                      \>Jianqui Li            \\
+                      \>Yu Hong               \\
+\textbf{Apologies}    \>None                  \\
+\end{tabbing}
+\section{Time and Place}
+The second client meeting for Software Engineering and Project was held in \textbf{Ingkarni Wardli, Room 462 \textnormal{at} 2:30pm \textnormal{on} Monday 19 August 2013}.
+\section{Quorum Announcement}
+Having determined that quorum was satisfied, the Chairman Mr.~Alhulayfi declared the meeting open.
+\section{Summary of Previous Meeting}
+Mr. Pei presented the group poster the team created to advertise itself. He
+explained the reasoning behind various design decisions, as well as the rea-
+soning behind individual members’ group roles.Also, we group member asked a lot of questions about function and safety.
+\section{Group Milestone: Prototype}
+\subsection{Overview}
+Mr.~Hong and Mr.~Li presented the group prototype of the robot.
+\subsection{Detailed Presentation}
+\begin{itemize}
+ \item In our prototype of the robot, we have installed three types of sensors (light sensor, obstacle sensor and pump sensor). we put light sensor in the front such that the robot may take the turning in time, otherwise it might be too late for robot to rotate. In terms of obstacle sensor, it should be put at a low place, so we found a lowest place in the front and put the sensor there.
+\end{itemize}
+\section{Individual Milestone Reports}
+No individual milestones were reported.
+\section{Requirements Elicitation}
+The majority of the meeting consisted of interviewing the client for project requirements.  A paraphrased summary of the questions, and client answers, follows:
+\subsection{Functional Requirements}
+\begin{enumerate}
+ \item \textbf{Mr.~Tao:}       How the robot will mark road closure? how should road closure look like?  \\
+       \textbf{Client:}        You should tie a pen in the robot and the pen could move up and down so that the robot could mark the road closure. So maybe you should re-design the robot. And the road closure will be just a line when the robot marks.
+ \item \textbf{Mr.~Pei:}       How much information should and existing map contain? Should we consider the circumstance that the existing map contains nothing? \\
+       \textbf{Client:}        In later this week you will get the map information and you should load the map by the robot after the robot explored the map. The map will give you enough information you want.
+ \item \textbf{Mr.~Nestor:}    The robot needs some AI algorithm to control the automation. What type of search algorithm is
+recommended and how this should be controlled automatically and manually?  \\
+       \textbf{Client:}        When the mode is changed, you should save all the information so that after changing no matter the man or robot could continue the work before changing. Basically, the robot will traversal the whole city and find the dangerous areas as well as update the road closure.
+ \item \textbf{Mr.~Alhulayfi:}    What kind of movements should the robot have? how should the robot rotate? How about the
+rotation angles for the robot? \\
+       \textbf{Client:}       Since your group's robot is a little long, so you should do some calculation when the robot rotates. Also, you could put the bumps on the side to help rotation. But there are limit bumps so it is up to you how to design the robot and achieve the goal. 
+\end{enumerate}
+\subsection{Design Requirements}
+\begin{enumerate}
+ \item \textbf{Mr.~Alhulayfi:}       What will be the physical representation of the obstacles? (In the project description, they said the
+material of the obstacles but not the shape.) How does the robot recognise the different materials? \\
+       \textbf{Client:}        There are different sorts of objects in the environment, eg. carton and drink bottles, and you should determine how sensitive the robot is to the objects. You also should expect objects to be low to the ground, like rocks would be.\\
+       \textbf{Group Question:}       Regarding GUI, what issues should we consider about GUI for the next meeting? \\
+       \textbf{Client:}        GUI could consider now but it is the next week's milestone.
+\end{enumerate}
+\section{Meeting Feedback}
+The tutor gave the group some feedback for its performance in its second client meeting. The following is a
+summary of the key points.
+\begin{itemize}
+ \item You should prepare a brochure and consider how to represent the GUI. Also, you should verify the work correctly and do a lot of physical tests to help verification.
+\end{itemize}
+
+\section{Adjournment}
+The next meeting is a group meeting to be held in the same place, namely Ingkarni
+Wardli, Room 462 at 2:00pm on Thursday 22 August 2013.\\
+The meeting will close around 3:10pm.
+\end{document}

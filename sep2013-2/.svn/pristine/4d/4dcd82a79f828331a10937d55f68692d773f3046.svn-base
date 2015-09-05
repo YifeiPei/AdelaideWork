@@ -1,0 +1,76 @@
+package artificialIntelligenceUnit;
+
+import java.awt.Point;
+import java.awt.geom.Point2D;
+
+import mapDataStructure.Map;
+import controllerFSM.ControllerFSM;
+/**
+ * @author Matthew Nestor
+ * @filename ArtificialIntelligenceFSM.java
+ * @package artificialIntelligenceUnit
+ * @project HostSide
+ * @date 17/10/2013
+ */
+
+public class ArtificialIntelligenceFSM extends Thread{
+	private final int STOP = 0;
+	private final int FORWARD = 1;
+	private final int BACKWARD = 2;
+	private final int TURNLEFT = 3;
+	private final int TURNRIGHT = 4;
+	private final int BATTERYINFO = 11;
+	private final int LIGHTINFO = 12;
+	private final int TACHOINFO_A = 13;
+	private final int TACHOINFO_B = 14;
+	private final int RANGEINFO = 15;
+	private final int GETANGEL = 16;
+	private final int GETDISTANCE = 17;
+	private final int MARK = 20;
+	private final int FOLLOWLINE = 30;
+	private final int DISCONNECTION = -1;
+	
+	private Graph graph;
+	private Map map;
+	private ControllerFSM controllerFSM;
+	private volatile boolean running;
+	private volatile boolean foundNext;
+	private boolean foundAll;
+	
+	public ArtificialIntelligenceFSM(Map m, ControllerFSM cfsm){
+		map = m;
+		graph = new Graph(map);
+		controllerFSM = cfsm;
+		updateGraph();
+	}
+	
+	public Graph getGraph(){
+		return graph;
+	}
+	
+	public void terminateThread(){
+		running = false;
+	}
+	
+	public void foundNext(){
+		foundNext = true;
+	}
+	
+	public void sendCommand(int c){
+		controllerFSM.executeCommand(c);
+	}
+	
+	public void run(){
+		running = true;
+		
+		while(running){
+			
+		}
+		sendCommand(STOP);
+	}
+	
+	public void updateGraph(){
+		graph.updateGraph();
+	}
+	
+}

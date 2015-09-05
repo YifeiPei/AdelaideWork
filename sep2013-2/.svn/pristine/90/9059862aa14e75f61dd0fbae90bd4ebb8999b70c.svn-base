@@ -1,0 +1,584 @@
+\documentclass[titlepage]{article}
+\usepackage{tabularx}
+\usepackage{listings}
+\lstset{breaklines=true} 
+\setcounter{tocdepth}{2}
+\title{Software Requirements Specification for Software Engineering and Project}
+\author{Yu hong, JianQiu Li from Group 2}
+\date{August 26 2013 \\ Version 0.3 DRAFT}
+\begin{document}
+\maketitle
+\tableofcontents
+\section*{Revision History}
+\begin{tabularx}\linewidth{|l|c|X|r|}
+\hline
+Name & Date & Reason For Changes & Version \\
+\hline
+\hline
+Yu hong,JianQiu Li & 22/08/2013 & Initial Version & 0.1 \\
+\hline
+Yu hong & 24/08/2013 & Minor Modification & 0.2 \\
+\hline
+Yifei Pei & 25/08/2013 & Minor Modification & 0.3 \\
+\hline
+% section 1 Introduction
+\end{tabularx}
+\section{Introduction}
+\subsection{Purpose}
+This document covers the specification of software requirements for developing the
+SEP project in semester 2, 2013. The project objective is
+to develop a Robot that is capable of marking road closures and identifying 
+dangerous areas such that people are alerted not to move into these areas.
+The software requirements specified in this document are collected from the clients.
+This document is a part of the products to be maintained through the development of 
+this project and needs to be delivered in conjunction with the other documents and products.
+\\
+\\
+The scope of this document is the requirements that serves both the host program 
+operation and the robot. The robot should be able to detect dangerous areas and send
+ the information back to the host, and the operator at the host side is able to control the movement of the robot.
+\subsection{Document Conventions}
+The specification of the software requirements consists of functional requirements, nonfunctional requirements, and security requirements. Each requirement will be classified into High, Medium, or Low priority, which will be tagged in its corresponding requirement statement.
+\subsection{Intended Audience and Reading Suggestions}
+This document is intended for all stakeholders of the SEP project in 2013, which include lectures/clients, who are the users of the system, and all members of group two in this class, who are contributing to the project.\\
+\\
+The below sections contain the specification of software requirements which consist of functional requirements, nonfunctional requirements, and user requirements for both the robot and host systems, which are important information for the designers, developers and testers. Designers of the system need this information to design the architecture of the system, which is a key procedure before developers could start their work. Developers of the system also need these information to guide them implementing specific functions. Furthermore, testers need to test the specific functions of the system with accordance to these provided requirements.\\
+\\
+Since this document contains all the requirements that describe the functionalities of the system, it is recommended that this document should be thoroughly read.
+\subsection{Project Scope}
+The project scopes are to produce a prototype of the robot required in SEP project, and to deliver the corresponding documents according to the schedule.\\
+\\
+The robot should be able to identify and mark the road closures as well as dangerous areas in the map on both the robot and host side. To achieve this goal, a whiteboard marker would be mounted to the robot. Thus, whenever the robot marks on the map, the GUI (i.e., Graphical User Interface) on the host system would dynamically display the changes, with an XML (i.e., Extensible Markup Language) document being generated and updated simultaneously. In addition, the robot should be able to automatically conduct the map by means of all possible features detected.\\
+\\
+With regard to the documentation of this project, SRS, SDD, SPMP, and user manual will be created according to the schedule of the project and maintained through the process of developing phase.\\
+\subsection{References}
+
+
+\begin{thebibliography}{9}
+
+\bibitem{Project description} Project description\\
+\label{Project description}
+\begin{lstlisting}
+https://cs.adelaide.edu.au/users/third/sep/13s2-sep-Adelaide/project/ProjectDescription.pdf
+\end{lstlisting}
+
+\bibitem{1_ Client's meeting} Client's meeting minutes\_12-08-13\\
+\label{1_ Client's meeting}
+\begin{lstlisting}
+https://version-control.adelaide.edu.au/svn/sep2013-2/documentation/minutes/client-meetings/1_client_meeting_minutes_12-08-13.pdf
+\end{lstlisting}
+
+\bibitem{2_ Client's meeting} Client's meeting minutes\_20-08-2013\\
+\label{2_ Client's meeting}
+\begin{lstlisting}
+https://version-control.adelaide.edu.au/svn/sep2013-2/documentation/minutes/client-meetings/2_client_meeting_minutes_20-08-2013.pdf
+\end{lstlisting}
+
+
+\bibitem{SRS Template} SRS Template\\
+\label{SRS Template}
+\begin{lstlisting}
+https://cs.adelaide.edu.au/users/third/sep/13s2-sep-Adelaide/resources/SRS_template.pdf
+\end{lstlisting}
+
+
+\bibitem{Lego tutorial} Lego tutorial\\
+\label{Lego tutorial}
+\begin{lstlisting}
+http://lejos.sourceforge.net/nxt/nxj/tutorial/
+\end{lstlisting}
+
+
+\bibitem{Blue-tooth features} Blue-tooth features\\
+\label{Blue-tooth features}
+\begin{lstlisting}
+http://www.bluetooth.com/Pages/Basics.aspx
+\end{lstlisting}
+
+
+
+\bibitem{XML} Sample XML file in the format specified in DTD\\
+\label{XML}
+\begin{lstlisting}
+http://forums.cs.adelaide.edu.au/file.php?file=%2F523%2Fsep2013-map.xml
+\end{lstlisting}
+
+
+
+
+\end{thebibliography}
+\newpage
+
+
+
+% section 2 Overall Description
+
+\section{Overall Description}
+\subsection{Product Perspective}
+This software product consists of major two components.\\
+\\
+The first one is to run on the robot, a pre-existing LEGO Mindstorms NXT, for detecting and marking dangerous areas in the city.
+ The second is the one that resides in the host system, which is capable of controlling the activities of the robot and displaying the mapping information.\\
+\\
+Continuous communication is required between the robot and host system and is achieved by means of Bluetooth device.\\
+\subsection{Product Features}
+The product consists of two components: the robot side and host side.
+The main features of the robot side includes:
+
+\begin{itemize}
+
+
+\item The robot should be able to explore a city area and identify dangerous areas autonomously. After the robot arrives at the initial starting position of the city area, it would start to explore and map the site without intervention from the operator. However, the operator is allowed to commence manual control when necessary.
+\item The robot should be able to mark the dangerous areas, in the form of:\\
+\\
+A visual map constructed on paper/card;
+\\
+A visual representation in the map area of the GUI;
+\\
+textual representation XML file, which abide by the format specified by the DTD (i.e., Document Type Definition) file.
+\item The robot should be able to stop autonomously for the sake of safety in the case of low battery level or losing communication with the host side.
+\end{itemize}
+The main features of the host side includes:
+\begin{itemize}
+\item The GUI (i.e., Graphical User Interface) on the computer allows the operator to manually control and monitor the robot's movement, which is achieved by a set of buttons and a map panel, respectively.
+\item The operator is able to establish a communication with the robot by means of the GUI and Bluetooth device.
+\item The operator is able to stop the movement of the robot using the emergency stop button in the GUI whenever an emergency occurs.
+\end{itemize}
+
+
+
+\subsection{User Classes and Characteristics}
+Since programming techniques and technical know-how are not required, people from different fields are able to use this product after some basic training.
+\\
+In general, users can be classified into the following three groups:
+\begin{itemize}
+\item Trainer and Trainee
+\\
+For educational purposes, trainees can be motivated to create their own products for similar or distinguished critical tasks, after this product is demonstrated by the trainers.
+\item Military
+\\
+As some areas might be dangerous, Military can use this product to explore and map the area with no human being exposed, which would be more efficient and accurate than manually mapping by humans.
+\end{itemize}
+
+
+\subsection{Operating Environment}
+The application will be installed on a pre-built Lego Mindstorms NXT robot, which has 256 Kbytes Flash and 64 Kbytes Ram on the leJOS 0.9.1 pre-flashed firmware.
+
+
+
+\subsection{Design and Implementation Constraints}
+The design and implementation constraints originate from the pre-built robot hardware and client requirements. These constraints are listed as follows:%put in list formatting
+\begin{itemize}
+\item Hardware constraint. The Lego Robot has only 256 Kbytes to store the instructions, which is a restriction to development of the artificial intelligence of the robot.
+\item Programming language constraint. The system must be implemented in Java.
+\item The mapping data must be saved in the XML file abiding by the format defined in DTD.
+\item The tool 'make' must be used to build any version of the software.
+\item The software should be tested in JUnit.
+\end{itemize}
+
+\subsection{User Documentation}
+
+\begin{itemize}
+\item API Documentation. The source code of the software will be documented in Javadoc to hyperlink related documents together, which would generate an API (i.e., Application Programming Interface) documentation in HTML format. This API Documentation would facilitate the developers and maintainers to maintain the source code.
+\item User Manual. The user of the software will be provided with a User Manual, which contains the guide to the use of GUI and control of the robot.
+\end{itemize}
+
+
+
+\subsection{Assumptions and Dependencies}
+\begin{itemize}
+\item The communication between the robot and host computer is achieved by Bluetooth device, which has a maximum range of approximately 100 meters. We assume that the robot and the host computer would always be within this range during the mapping process.
+\item We assume that the operator is able to monitor the movement of the robot clearly while it is mapping.
+\end{itemize}
+
+
+
+
+
+
+% section 3 User Requirements
+
+\newpage
+
+
+
+ \section{User Requirements}
+ \subsection{Robot requirements} %either this or the latter is to be removed
+\subsubsection{R01: Movement of the robot }
+\begin{description}
+\item[Description: ] \hfill \\ The robot should be able to move forward or backward and have the ability to rotate left or right, on a plain surface.
+The movement of the robot should be conducted in the following two conditions:
+
+\begin{itemize}
+\item The robot is moving under the operator’s control.
+\item The robot is moving autonomously by means of intelligence developed for it within the boundaries of the city.
+\end{itemize}
+
+\item[Rationale: ] \hfill \\The robot is used to explore the city area, which requires the robot the ability to go forward or backword, rotate left or right.
+\item[Source: ] Project Description Document.
+\item[Priority: ] High
+\end{description}
+
+
+\subsubsection{R02: Obtaining current location of the robot }
+\begin{description}
+\item[Description: ] \hfill \\The robot should be able to calculate the current location in the map, known as city area. This location information would be sent back to the host continuously in order to obtain the path this is transversed by the robot.
+
+\item[Rationale: ] \hfill \\Both the robot and the operator need to ensure that the robot is in the range of city area. Therefore, information of the current location would help to avoid crossing the boundaries. In addition, the robot is required to mark a road closure or avoid obstacle on both the map in the form of paper, visual representation on the GUI and XML file, which needs the information of current location.
+\item[Source: ] Project Description Document.
+\item[Priority: ] High
+\end{description}
+
+
+\subsubsection{R03: Identifying No-go area}
+\begin{description}
+\item[Description: ] \hfill \\ The robot should be able to identify the road closures and obstacles with accordance to the data provided in the pre-defined or half-defined XML file, and mark them on the map, represented as paper.
+\item[Rationale: ] \hfill \\The robot should be avoided to enter these dangerous areas in order to ensure its safety, which is of top priority.
+\item[Source: ] Project Description Document 
+\item[Priority: ] High
+\end{description}
+
+\subsubsection{R04: Identifying boundaries of the map }
+\begin{description}
+\item[Description: ] \hfill \\ The robot should be able to identify the boundaries of the city area and avoid wandering out of it, under automatic mode.
+\item[Rationale: ] \hfill \\The robot is responsible for exploring the given city area. Crossing the boundaries could cause a potential hazard for the safety of the robot and make the mapping process less efficient.
+\item[Source: ] Project Description Document 
+\item[Priority: ] High
+\end{description}
+
+\subsubsection{R05: Detecting obstacles }
+\begin{description}
+\item[Description: ] \hfill \\ Using ultrasonic sensor and bump sensor, the robot should be able to detect and locate obstacles around it.
+\item[Rationale: ] \hfill \\The city area to be explored may have many obstacles on the road. The robot equipped with ultrasonic sensor and bump sensor is able to detect these obstacles and have them marked on the map.
+\item[Source: ] Project Description Document 
+\item[Priority: ] High
+\end{description}
+
+\subsubsection{R06: Detecting roads }
+\begin{description}
+\item[Description: ] \hfill \\ Within the city area, there are a number of roads, in which the robot is supposed to move. As roads are represented as space between two black lines, the robot can distinguish the changes of colors using light sensor.
+\item[Rationale: ] \hfill \\In order to explore the city, the robot needs to transverse from point A to point B, which is achieved by moving along the road. Therefore, the robot should be capable of detecting roads using light sensor in order to accomplish its task.
+\item[Source: ] Project Description Document 
+\item[Priority: ] High
+\end{description}
+
+\subsubsection{R07: Marking road closures}
+\begin{description}
+\item[Description: ] \hfill \\ The robot needs to mark road closures under the following two circumstances:
+
+\begin{itemize}
+\item Mark road closures according to the data pre-defined in the XML file.
+\item Mark the road closures whenever the robot detect one.
+\end{itemize}
+
+When the robot marks the road closure, it needs to mark in the form of:
+
+\begin{itemize}
+\item A visual map constructed on paper/card;
+\item A visual representation in the map area of the GUI
+\item textual representation XML file, which abide by the format specified by the DTD (i.e., Document Type Definition) file.
+\end{itemize}
+
+\item[Rationale: ] \hfill \\The city struck by natural disaster leaves several area unsafe. Marking road closures could help to prevent people from moving into these areas.
+\item[Source: ] Project Description Document
+\item[Priority: ] High
+\end{description}
+
+
+\subsubsection{R08: Accepting commands }
+\begin{description}
+\item[Description: ] \hfill \\ The robot should be able to perform commands from the operator at all times. 
+
+\begin{itemize}
+\item Under manual control mode, the robot should be able to accept and perform the command from the operator, such as forward, backward and rotate.
+\item Under automatical control mode, the operator normally do not intervene in the process of mapping. However, the operator would give commands (e.g., Emergency Stop) to the robot when necessary.
+\end{itemize}
+
+\item[Rationale: ] \hfill \\The communication between the host and the robot is represented as giving and accepting commands.
+\item[Source: ] Project Description Document 
+\item[Priority: ] High
+\end{description}
+
+
+
+\subsubsection{R09: Automated mapping }
+\begin{description}
+\item[Description: ] \hfill \\After manually directed to the initial starting position, the robot should start mapping automatically. The process of mapping will be terminated or interrupted under the following circumstances, respectively:
+\begin{itemize}
+\item The mapping is completed
+\item Unexpected event occurs, such as loss of communication with the host or wandering out of the city boundaries
+\end{itemize}
+\item[Rationale: ] \hfill \\ Automated mapping could help to reduce time, cost and effort required to accomplish the task than manual control mode.
+\item[Source: ] Project Description Document 
+\item[Priority: ] High
+\end{description}
+
+
+
+
+
+
+\subsection{Mapping requirements} 
+ \label{sec:Map}
+\subsubsection{M01: Displaying transversed path }
+\begin{description}
+\item[Description: ] \hfill \\During the process of mapping, the transversed path of the robot would be displayed on the GUI of the host side.
+
+\item[Rationale: ] \hfill \\The transversed path displayed on the GUI could facilitate the operator to trace the history movement record of the robot.
+\item[Source: ] Project Description Document
+\item[Priority: ] High
+\end{description}
+
+\subsubsection{M02: Map Saving }
+\begin{description}
+\item[Description: ] \hfill \\During the process of mapping, the obtained mapping information, such as road closures and obstacles, as well as the transversed path information would be sent to the host side and stored in the form of XML file abiding by the format specified in the DTD.
+\item[Rationale: ] \hfill \\The result of mapping should be stored in a document format such that the map could be reused.
+\item[Source: ] Project Description Document
+\item[Priority: ] Medium
+\end{description}
+
+
+\subsubsection{M03: Map Loading }
+\begin{description}
+\item[Description: ] \hfill \\The host system should be able to open a saved map in the form of XML file in the format defined in the DTD. The opened map would be displayed on the GUI of the host side.
+\item[Rationale: ] \hfill \\The host system should be able to reuse the map that is previously saved. In addition, the map can be updated during the mapping process, if the map was partially completed before.
+\item[Source: ] Project Description Document
+\item[Priority: ] Medium
+\end{description}
+
+
+\subsubsection{M04: Marked road closures and obstacles in XML }
+\begin{description}
+\item[Description: ] \hfill \\Information in relation to road closures and obstacles would be recorded in the form of textual representation XML file, which abides by the format specified by the DTD.
+\item[Rationale: ] \hfill \\Road closures and obstacles are the main objects the robot is required to detect. Therefore, these information should be stored in an appropriate document.
+\item[Source: ] Project Description Document
+\item[Priority: ] High
+\end{description}
+
+
+
+\subsection{Host requirements}
+\subsubsection{H01: GUI }
+\begin{description}
+\item[Description: ] \hfill \\ GUI will be provided for the operator to control and monitor the movement of the robot. The GUI should contain a number of buttons to perform the communication with the robot, such as forward, backward and stop. In addition, the GUI also contains a map panel that would display the mapping process under both the manual control mode and automatic mode. Finally, the GUI provides a list menu that allows the operator to save and load map in the form of XML file in the format specified by the DTD.
+\item[Rationale: ] \hfill \\GUI is an important interface for communication between the operator and the robot. In addition, the map displayed on the GUI could also help the operator to monitor the movement of the robot.
+\item[Source: ] Project Description Document
+\item[Priority: ] High
+\end{description}
+
+
+
+\subsubsection{H02: Manual Control }
+\begin{description}
+\item[Description: ] \hfill \\ The operator is able to control the movement of the robot under both the manual control mode and automatic mode by means of GUI, which contains a number of buttons that could control the robot, such as forward, backward, rotate, stop, etc.
+\item[Rationale: ] \hfill 
+\begin{itemize}
+\item Under manual control mode, remote control allows the operator to control the movement of the robot in order to accomplish some certain task, such as arriving at the initial start position. 
+\item Under automatic control mode, remote control allows the operator to interrupt the process of mapping of the robot when unexpected event occurs. For instance, the Emergency Stop would be required when the robot bumps into an obstacle.
+\end{itemize}
+\item[Source: ] Project Description Document
+\item[Priority: ] High
+\end{description}
+
+
+\subsubsection{H03: Displaying the robot current position on GUI }
+\begin{description}
+\item[Description: ] \hfill \\The GUI on the host side would provide a map panel that displays a visual representation of the map with the robot current position shown on it.
+\item[Rationale: ] \hfill \\ The operator should monitor the robot position at all times in case that the robot crosses the boundaries or enters a dangerous area.
+\item[Source: ] Project Description Document
+\item[Priority: ] High
+\end{description}
+
+\subsubsection{H04: Emergency Stop }
+\begin{description}
+\item[Description: ] \hfill \\Under automatic mode, the operator can stop the process of mapping when observing an emergency.
+\item[Rationale: ] \hfill \\ When unexpected event occurs, such as bumping in a obstacle, the operator can choose to stop the process of mapping in order to ensure the safety of the robot.
+\item[Source: ] Project Description Document
+\item[Priority: ] High
+\end{description}
+
+\subsubsection{H05: Bluetooth Communication }
+\begin{description}
+\item[Description: ] \hfill \\The host system should be programmed in such a way that the Bluetooth communication is enabled.
+\item[Rationale: ] \hfill \\ The communication between the robot and the host is achieved by Bluetooth device. Therefore, it is necessary to implement Bluetooth communication in order to establish communication between them.
+\item[Source: ] Project Description Document
+\item[Priority: ] High
+\end{description}
+
+\subsubsection{H06: Alert Message }
+\begin{description}
+\item[Description: ] \hfill \\ Once the robot is enforced to stop due to the event of connection interruption or low battery power, one alert message is going to be sent to the operator telling the inferior circumstances of the robot. On the host side, the message will be shown on the GUI so the operator can reflect accordingly.
+
+\item[Rationale: ] \hfill \\ The robot should have a safe way to deal with the occurrence of inferior situations such as low battery power and connection interruption. After the emergency stop to make the robot remain safe, the operator should have a way to know the information so actions can be taken to make the robot work again.
+
+\item[Source: ] Project Description Document
+\item[Priority: ] Medium
+\end{description}
+
+
+\newpage
+
+
+
+
+% section 4 System Features
+
+
+
+
+\section{System Features}
+\subsection{Manual Control}
+\subsubsection{Description}
+\begin{description}
+\item[Priority: ] High
+\end{description}
+The system allows the operator to manually control the movement of the robot to perform the basic movements, such as moving forward or backward, rotating left or right, stop, etc. The manual control can be conducted under both the automatic mode and the manual control mode, which are interchangeable by means of the buttons on the GUI.
+
+\subsubsection{Stimulus/Response Sequences}
+After the Bluetooth connection between the robot and the host side is established, the operator can control the movement of the robot by means of the buttons on the GUI. During the process of automatic mapping, the automated behaviour of the robot can be halted by any operation of the operator.
+
+\subsubsection{Requirements}
+The details of Functional requirements of this feature are described in Section 3.3 as in number H02.
+
+
+\subsection{Automatic Mapping}
+\subsubsection{Description}
+\begin{description}
+\item[Priority: ] High
+\end{description}
+Once the automatic mode is selected, the robot is able to perform the process of mapping automatically without the intervention of the operator.
+
+\subsubsection{Stimulus/Response Sequences}
+To perform automatic mapping, the operator should press the corresponding button to activate the robot’s automatic mode. Then the robot would commence the mapping procedures with accordance to algorithms developed for it. During the process of mapping, the robot would mark the obstacles and road closures in the means specified in 3.1 as in number R07. After the mapping process is completed, the operator is able to save the result of mapping in the means specified in 3.2 as in number M02.
+
+\subsubsection{Requirements}
+The details of Functional requirements of this feature are described in Section 3.1 as in number R10.
+
+
+
+
+\newpage
+
+% section 5 External Interface Requirements
+
+
+
+\section{External Interface Requirements}
+\subsection{User Interfaces}
+A user interface is provided for the operator to manually control and monitor the movement of the robot. The user interface should consist of four parts: command buttons, robot information area, map area and list menu. The details of these parts are listed as follows:
+\begin{itemize}
+\item Command buttons. A number of buttons that allows the operator to control the movement of the robot. The command buttons include: forward, backward, left, right, stop, connection (i.e., to establish the connection with the robot), automatic mapping. The robot would accept and perform the corresponding commands when the operator presses these buttons.
+\item Robot information area. This area contains the information in relation to current battery level of the robot, robot name and connection status.
+\item Map area. The current map would be displayed in this area along with the path that the robot transversed. In addition, the current location of the robot would also be shown within the map.
+\item List menu. List menu contains the functions that allow the operator to save and reload the map in the form of XML file in the format specified by the DTD.
+\end{itemize}
+\subsection{Hardware Interfaces}
+As specified in Section 2.4, a pre-built Lego Mindstorms NXT robot would be provided to serve as the environment for running the software application. The robot has 256 Kbytes Flash and 64 Kbytes Ram on the leJOS 0.9.1 pre-flashed firmware, which also contains a Bluetooth module to allow the communication between the robot and the host.
+\subsection{Software Interfaces}
+The software application consists of two systems: robot control system and host system. The robot control system will be running on Lego Mindstorms NXT robot with the firmware of version leJOS 0.9.1, while the host system would require Java 6 or higher version platform.
+\subsection{Communications interfaces}
+The communication between the robot and the host side is achieved by means of the Bluetooth device without any encryption.
+
+\newpage
+
+
+% section 6 Other Non-functional Requirements
+
+
+
+\section{Other Non-functional Requirements}
+
+%  Performance Requirements
+\subsection{Performance Requirements}
+\subsubsection{P01: Real Time Mapping}
+
+\begin{description}
+\item[Description: ] \hfill \\The system is required to construct the map in real-time during the process of mapping. The maximum delay can be accepted will be less than 0.5 seconds, as it is a safety-critical project.
+\item[Rationale: ] \hfill \\With real time mapping, the operator can immediately observe any changes on the map in order to ensure the safety of the robot and completeness of mapping.
+\item[Source: ] 1\_client\_meeting\_minutes\_12-08-13
+\item[Priority: ] Medium
+\end{description}
+
+
+%  Safety Requirements
+\subsection{Safety Requirements}
+
+\subsubsection{SA01: Moving Speed}
+\begin{description}
+\item[Description: ] \hfill \\The robot should move in a low speed in order to ensure its safety.
+\item[Rationale: ] \hfill \\The robot should not move very fast, otherwise the robot could be damaged due to too much force by bumping in any obstacles. 
+\item[Source: ] 1\_client\_meeting\_minutes\_12-08-13
+\item[Priority: ] Medium
+\end{description}
+
+\subsubsection{SA02: Autonomously halt}
+\begin{description}
+\item[Description: ] \hfill \\The robot should be able to halt autonomously under the following two circumstances: \hfill 
+\begin{itemize}
+\item Communication interruption
+\item Low battery power
+\end{itemize}
+After the autonomous halt, the robot should be able to send alert to the operator so the operator will notice the interrupted circumstance.
+\item[Rationale: ] \hfill \\The city area to be explored could be very dangerous. When the above events occur, the best solution would have the robot autonomously halt.
+\item[Source: ] 1\_client\_meeting\_minutes\_12-08-13
+\item[Priority: ] High
+\end{description}
+
+
+%  Security Requirements
+\subsection{Security Requirements}
+\subsubsection{SE01: Bluetooth Communication Security}
+\begin{description}
+\item[Description: ] \hfill \\ The connection between the robot and the host should be established after the operator inputs a 4 digits pin number.
+\item[Rationale: ] \hfill \\ The LEGO Mindstorms NXT robot provides a Bluetooth pairing with 4 digits pin to avoid any unintentional connection.
+\item[Source: ]  
+\item[Priority: ] Low
+\end{description}
+
+
+%  Software Quality Attributes
+\subsection{Software Quality Attributes}
+
+\subsubsection{SO01: Maintainability}
+\begin{description}
+\item[Description: ] \hfill \\ After being delivered, the product would be easy to use and maintain for users.
+\item[Rationale: ] \hfill \\ The user of the product may have new requirements that would need some modification on the system. Therefore, using the coding convention and appropriate documentation, the system would be easy to maintain.
+\item[Source: ] 1\_client\_meeting\_minutes\_12-08-13
+\item[Priority: ] Medium
+\end{description}
+
+
+\newpage
+
+
+
+% Section 7 Other Requirements
+
+\section{Other Requirements}
+\subsection{Quality Requirements}
+\subsubsection{O01: Delivery Requirement}
+\begin{description}
+\item[Description: ] \hfill \\ The allocated tasks should be finished and submitted on time with good quality.
+\item[Rationale: ] \hfill \\ Each member in this group are endeavoring to deliver the best product for the client.
+\item[Source: ]  
+\item[Priority: ] High
+\end{description}
+
+\newpage
+
+%  appendix
+\appendix
+\section{Glossary}
+\begin{description}
+\item[API] Application Programming Interface
+\item[DTD] Document Type Definition
+\item[GUI] Graphical User Interface
+\item[PIN] Personal Identification Number
+\item[SDD] Software Design Document
+\item[SEP] Software Engineering and Project
+\item[SPMP] Software Project Management Plan
+\item[SRS] Software Requirements Specification
+\item[XML] Extensible Markup Language
+\end{description}
+
+\end{document}

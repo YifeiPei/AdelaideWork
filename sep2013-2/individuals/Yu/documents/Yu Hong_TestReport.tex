@@ -1,0 +1,97 @@
+\documentclass[a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{color}
+\usepackage{listings}
+\lstset{ %
+language=Java,                % choose the language of the code
+basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+numbers=left,                   % where to put the line-numbers
+numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+stepnumber=1,                   % the step between two line-numbers. If it is 1 each line will be numbered
+numbersep=5pt,                  % how far the line-numbers are from the code
+backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=single,           % adds a frame around the code
+tabsize=2,          % sets default tabsize to 2 spaces
+captionpos=b,           % sets the caption-position to bottom
+breaklines=true,        % sets automatic line breaking
+breakatwhitespace=false,    % sets if automatic breaks should only happen at whitespace
+escapeinside={\%*}{*)}          % if you want to add a comment within your code
+}
+%%% page parameters
+\oddsidemargin -0.0 cm
+\evensidemargin -1 cm
+\textwidth 15 cm
+\topmargin -2.5 cm
+\textheight 25.5 cm
+\begin{document}
+\title{Testing Report}
+\author{Yu Hong a1616861}
+
+\date{3/11/2013}
+\maketitle
+\section{Introduction}
+The test cases covered in the report are relavent to the communication between PC side and Robot side. The files involved in this test are PCComms.java and RobotCommunication.java, which are located at
+\begin{verbatim}
+https://version-control.adelaide.edu.au/svn/sep2013-2/individuals/Yu/HostSide/src/
+hostSideCommsUnit/PCComms.java
+\end{verbatim}
+and
+\begin{verbatim}
+https://version-control.adelaide.edu.au/svn/sep2013-2/individuals/Yu/RobotSide/src/
+robotSideCommsUnit/RobotCommunication.java
+\end{verbatim}
+, respectively. 
+\\
+\\
+\noindent
+The tests are written in Junit and located in
+\begin{verbatim}
+https://version-control.adelaide.edu.au/svn/sep2013-2/individuals/Yu/test/
+RobotTest.java
+\end{verbatim}
+
+
+\section{Test Description and Rationale}
+The test cases regarding the communication is to test whether the value received by the robot is the one sent by the PC and to test the connection status between PC and the Robot.
+\begin{enumerate}
+\item Test the connection status after PC attempted to establish the connection.
+\item Test the disconnection status after PC attempted to disconnect.
+\item Test whether the robot can receive the movement value that is sent by the PC.
+\item Test wehther the robot can receive the sensor values that is sent by the PC.
+\item Test whether the robot can send values that is over 100,000 to PC. 
+\end{enumerate}
+
+\noindent
+Test one will compare the connection status with the expected status after PC attempted to establish the connection. As with test one, test two will compare the connection status with the expected status after PC attempted to disconnect.
+\\
+\\
+In terms of test three, as the movement commands that is sent from PC to Robot are integers ranged from 1 to 5, the test method will send integer within this range to the robot, and the robot will directly send the command it received back to PC. Therefore, the Junit test will compare the value that PC sends with the one it receives. As with test three, test four will test the sensor commands which are ranged from 11 to 19. The reason for the test five is that in some cases the robot needs to return large values over 100,000 and we need to ensure that the Robot is able to send back the value that is over 100, 000.
+\\
+\\
+However, the test for communication is complicated. In order to run each test case, the rest of the test cases should be blocked, otherwise the test would fail due to the interaction with other test methods. This JUnit test is able to pass all the test cases when it is running followed the above instruction.
+
+%appendix
+\appendix
+\section{Test Code}
+The code below shows a part of the test codes from RobotTest.java, and only the @Test for Connection test cases are covered in this report for brevity.
+\begin{lstlisting}
+@Test
+	public void testConnection() throws  NXTCommException, IOException {
+		boolean connected = communication.isconnected();
+		Assert.assertEquals(true, connected);
+	}
+	
+	@Test
+	public void testDisconnection() throws  NXTCommException, IOException {
+		boolean connected = communication.isconnected();
+		connected = communication.disconnection();
+		Assert.assertEquals(true, connected);
+	}
+	
+\end{lstlisting}
+\end{document}

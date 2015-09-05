@@ -1,0 +1,65 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+
+%%% page parameters
+\oddsidemargin 1 cm
+\textwidth 14cm
+\topmargin -1 cm
+\textheight 23 cm
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+
+%%% first draft of SPMP
+{\Large\bf Software Engineering and Project 2013}\\
+(COMP SCI 3006/7015)
+
+\vspace{1cm}
+
+School of Computer Science,\\
+The University of Adelaide\\
+
+\vspace{1cm}
+
+{\Large\bf Project Documentation}\\
+
+\vspace{0.5cm}
+{\bf Final Release of all documents\\
+\vspace{0.5cm}
+SEP Group 2}\\
+\vspace{0.5cm}
+
+\today
+
+\end{center}
+\vspace{2cm}
+
+{\small \noindent Declaration\\
+We declare that all material in this assessment is our own work, except where there is clear acknowledgement and reference to the work of others. We have read the University Policy Statement on Plagiarism, Collusion and Related Forms of Cheating: \url{http://www.adelaide.edu.au/policies/?230} \\
+\\
+We give permission for our assessment work, including our subversion repository, to be reproduced and submitted to academic staff for the purposes of assessment and to be copied, submitted and retained in a form suitable for electronic checking of plagiarism.}\\
+\\
+
+\renewcommand{\arraystretch}{2}
+
+\begin{tabularx}{0.885\textwidth}{|l|c|c|}
+
+\hline  Name& Student ID & Group Member Signature \\ 
+\hline  Abdulaziz ALHULAYFI & a1642362 & \includegraphics[height=0.725cm]{signature/Aziz.png} \\ 
+\hline  Yu HONG & a1616861 &  \includegraphics[height=0.725cm]{signature/Yu.png} \\ 
+\hline  Jianqiu LI & a1635717 &  \includegraphics[height=0.725cm]{signature/Jianqiu.png} \\ 
+\hline  Matthew NESTOR & a1132338 &  \includegraphics[height=0.725cm]{signature/Matt.png} \\ 
+\hline  Yifei PEI & a1611648 &  \includegraphics[height=0.725cm]{signature/Yifei.png} \\ 
+\hline  Bowen TAO & a1622211 &  \includegraphics[height=0.725cm]{signature/Bowen.png} \\ 
+\hline 
+\end{tabularx} 
+
+\end{titlepage}
+
+\end{document}

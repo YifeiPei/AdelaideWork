@@ -1,0 +1,347 @@
+package gui;
+
+import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Composite;
+import java.awt.Dimension;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Stack;
+
+import mapDataStructure.*;
+
+import javax.imageio.ImageIO;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+
+import artificialIntelligenceUnit.Edge;
+import artificialIntelligenceUnit.Graph;
+import artificialIntelligenceUnit.Vertex;
+
+/**
+ * 
+ * @author Yifei Pei & Matthew Nestor
+ *
+ */
+
+public class MapDraw extends JPanel{
+	private int scale;
+	private int originalScale;
+	private Map map;
+	private Graph graph;
+	private ArrayList<Obstacle> obstacles = null;
+	private ArrayList<Road> roads = null;
+	private ArrayList<Intersection> intersections = null;
+	private ArrayList<UnexploredZone> unexploredZones = null;
+	private ArrayList<DisasterZone> disasterZones = null;
+	private ArrayList<Closure> closures = null;
+	private BufferedImage unexplored = null;
+	private BufferedImage closure = null;
+	private BufferedImage obstacle = null;
+	private BufferedImage horizontalRoad = null;
+	private BufferedImage verticalRoad = null;
+	private BufferedImage intersection = null;
+	private BufferedImage robotNORTH = null;
+	private BufferedImage robotSOUTH = null;
+	private BufferedImage robotEAST = null;
+	private BufferedImage robotWEST = null;
+	private AlphaComposite composite;
+	private BasicStroke stroke;
+	private BasicStroke stroke2;
+	private boolean showAI = false;
+
+	public MapDraw(Map m, Graph g){
+		map = m;
+		graph = g;
+		this.setBackground(Color.WHITE);
+		this.setBounds(247, 13, 900, 690); //size of the map 1300x750
+		this.setPreferredSize(new Dimension(900, 650));
+		composite = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f);
+		stroke = new BasicStroke(0.5f);
+		stroke2 = new BasicStroke(0.3f);
+	}
+
+	public void showAI(boolean b){
+		showAI = b;
+	}
+
+	public void paintComponent(Graphics g)
+	{
+		final double radius = 1.5; // the radius for intersection, road closure, and obstacle
+		//System.out.println(SwingUtilities.isEventDispatchThread());
+		super.paintComponent(g);
+		Graphics2D g2d = (Graphics2D) g;
+		double calculate_scale_factor = Math.min( ((double)750) / ((double)map.getWidth()), ((double)680) / ((double)map.getHeight()) );
+		scale = (int) Math.floor(calculate_scale_factor);
+		//System.out.println("scale = "+ scale);
+		g2d.scale(scale, scale);
+
+		//System.out.println(map.getWidth());
+		//System.out.println(map.getHeight());
+		//System.out.println(this.getWidth());
+		//System.out.println(this.getHeight());
+
+		try {
+			unexplored = ImageIO.read(new File("icon/unexplored.png"));
+			closure = ImageIO.read(new File("icon/closure1.png"));
+			obstacle = ImageIO.read(new File("icon/wall2.png"));
+			horizontalRoad = ImageIO.read(new File("icon/horizontalRoad.jpg"));
+			verticalRoad = ImageIO.read(new File("icon/verticalRoad.jpg"));
+			intersection = ImageIO.read(new File("icon/intersection2.png"));
+			robotNORTH = ImageIO.read(new File("icon/NORTHrobotNXT.png"));
+			robotSOUTH = ImageIO.read(new File("icon/SOUTHrobotNXT.png"));
+			robotEAST = ImageIO.read(new File("icon/EASTrobotNXT.png"));
+			robotWEST = ImageIO.read(new File("icon/WESTrobotNXT.png"));
+		}
+		catch(Exception e) {
+			e.printStackTrace();
+		}
+
+		// Draw the boundary
+		g2d.drawRect(0,0,map.getWidth(),map.getHeight());
+
+
+
+		//g2d.setColor(Color.GRAY);
+		//unexploredZones = map.getUnexploredZones();
+		//for(UnexploredZone uz: unexploredZones){
+		//	g2d.drawRect((int)(uz.getLocation().getX()), (int)((map.getHeight() - uz.getLocation().getY()) - uz.getHeight()), uz.getWidth(), uz.getHeight());
+		//	g2d.fillRect((int)(uz.getLocation().getX()), (int)((map.getHeight() - uz.getLocation().getY()) - uz.getHeight()), uz.getWidth(), uz.getHeight());	
+		//}
+
+
+
+		// draw the roads
+		g2d.setColor(Color.black);
+		roads = map.getRoads();
+		for(Road r: roads)
+		{
+			/*
+			g2d.drawLine((int)(r.getStart().getX()), (int)(map.getHeight() - r.getStart().getY()),
+					(int)(r.getEnd().getX()), (int)(map.getHeight() - r.getEnd().getY()));
+			 */
+			if(r.isHorizontal()){
+				int length = r.getLength();
+				int x = (int)r.getStart().getX();
+				int y = (int)r.getStart().getY();
+				int numPrints = (int)Math.ceil(length/(double)(radius*2));
+				for(int i = 0; i < numPrints; i++){
+					if(length >= (radius*2)){
+						g2d.drawImage (horizontalRoad, x,
+								(int)((map.getHeight() - y)-radius), (int)(radius*2), (int)(radius*2), null);
+					}
+					else if(length < (radius*2)){
+						g2d.drawImage (horizontalRoad, x,
+								(int)((map.getHeight() - y)-radius), length, (int)(radius*2), null);
+					}
+					x = (int)(x + (radius*2));
+					length = (int)(length - (radius*2));
+				}
+			}
+			else if(r.isVertical()){
+				int length = r.getLength();
+				int x = (int)r.getStart().getX();
+				int y = (int)(r.getStart().getY()+(radius*2));
+				int numPrints = (int)Math.ceil(length/(double)(radius*2));
+				for(int i = 0; i < numPrints; i++){
+					if(length >= (radius*2)){
+						g2d.drawImage (verticalRoad,(int)(x-radius),
+								(int)(map.getHeight() - y), (int)(radius*2), (int)(radius*2), null);
+					}
+					else if(length < (radius*2)){
+						g2d.drawImage (verticalRoad,(int)(x-radius),
+								(int)(map.getHeight() - y), (int)(radius*2), length, null);
+					}
+					length = (int)(length - (radius*2));
+					if(length < (radius*2)){
+						y = y + length;
+					}
+					else{
+						y = (int)(y + (radius*2));
+					}
+				}
+			}
+		}
+
+		// draw the intersections
+		g2d.setColor(Color.black);
+		intersections = map.getIntersections();
+		for(Intersection i: intersections)
+		{
+			/*
+			g2d.drawOval((int)(i.getLocation().getX()-radius), (int)((map.getHeight() - i.getLocation().getY())-radius), radius*2, radius*2);
+			g2d.fillOval((int)(i.getLocation().getX()-radius), (int)((map.getHeight() - i.getLocation().getY())-radius), radius*2, radius*2);
+			 */
+			g2d.drawImage (intersection,(int)(i.getLocation().getX()-3),(int)((map.getHeight() - i.getLocation().getY())-3), 5, 5, null);
+		}
+
+		// draw the obstacles
+
+		obstacles = map.getObstacles();
+		for(Obstacle o: obstacles) {
+			g2d.drawImage (obstacle,(int)(o.getLocation().getX()-radius),(int)((map.getHeight() - o.getLocation().getY())-radius), (int)(radius*2), (int)(radius*2), null);
+		}
+
+		//g2d.setColor(Color.lightGray);
+		//obstacles = map.getObstacles();
+		//for(Obstacle o: obstacles)
+		//{
+		//	g2d.drawOval((int)(o.getLocation().getX()-radius), (int)((map.getHeight() - o.getLocation().getY())-radius), radius*2, radius*2);
+		//	g2d.fillOval((int)(o.getLocation().getX()-radius), (int)((map.getHeight() - o.getLocation().getY())-radius), radius*2, radius*2);
+		//}
+
+		// draw the closures
+
+		for(Road r: roads) {
+			if(r.isClosed()) {
+				closures = r.getClosures();
+				for(Closure c: closures){
+					g2d.drawImage (closure, (int)(c.getLocation().getX()-radius),
+							(int)((map.getHeight() - c.getLocation().getY())-radius), (int)(radius*2), (int)(radius*2), null);
+				}
+			}
+		}
+
+		//draw the disaster zones
+		Composite originalComposite = g2d.getComposite();
+		g2d.setColor(Color.red);
+		g2d.setStroke(stroke);
+		disasterZones = map.getDisasterZones();
+		for(DisasterZone dz: disasterZones){
+			g2d.drawOval((int)((dz.getLocation().getX()-dz.getRadius())),
+					(int)(((map.getHeight() - dz.getLocation().getY())-dz.getRadius())),
+					(dz.getRadius()*2), (dz.getRadius()*2));
+			g2d.setComposite(composite);
+			g2d.fillOval((int)((dz.getLocation().getX()-dz.getRadius())),
+					(int)(((map.getHeight() - dz.getLocation().getY())-dz.getRadius())),
+					(dz.getRadius()*2), (dz.getRadius()*2));
+
+		}
+
+		// draw the unexplored zones
+		g2d.setComposite(originalComposite);
+		unexploredZones = map.getUnexploredZones();
+		g2d.setColor(Color.BLACK);
+		for(UnexploredZone uz: unexploredZones){
+			//g2d.drawImage (unexplored, (int)(uz.getLocation().getX()), (int)((map.getHeight() - uz.getLocation().getY()) - uz.getHeight()), uz.getWidth(), uz.getHeight(), null);
+			//g2d.drawRect((int)(uz.getLocation().getX()),
+			//(int)((map.getHeight() - uz.getLocation().getY()) - uz.getHeight()), uz.getWidth(), uz.getHeight());
+			g2d.fillRect((int)(uz.getLocation().getX()),
+					(int)((map.getHeight() - uz.getLocation().getY()) - uz.getHeight()), uz.getWidth(), uz.getHeight());	
+		}
+		
+
+		//g2d.setColor(Color.orange);
+		//for(Road r: roads)
+		//{
+		//	if(r.isClosed()){
+		//		g2d.drawOval((int)(r.getClosureLocation().getX()-radius), (int)((map.getHeight() - r.getClosureLocation().getY())-radius), radius*2, radius*2);
+		//		g2d.fillOval((int)(r.getClosureLocation().getX()-radius), (int)((map.getHeight() - r.getClosureLocation().getY())-radius), radius*2, radius*2);
+		//	}
+		//}
+
+		//g.setColor(Color.black);
+		//g.drawString("The red areas are disaster zones", 20, map.getHeight()+30);
+
+		//g.drawString("The green points are intersections", 20, map.getHeight()+50);
+
+		//g.drawString("The magenta lines are roads", 20, map.getHeight()+70);
+		//g.drawString("The orange points are obstacles", 20, map.getHeight()+90);
+		//g.drawString("The gray points are road closures", 20, map.getHeight()+110);
+
+		// Draw the robot
+		/*
+		int [] r_x = {(int)Math.round(-(20)),(int)Math.round(6.5),(int)Math.round((6.5+3)),(int)Math.round(6.5),(int)Math.round(-20)};
+		int [] r_y = {(int)Math.round(-8),(int)Math.round(-8),0,(int)Math.round(8),(int)Math.round(8)};
+		Polygon robot = new Polygon(r_x, r_y, 5);
+
+		// 1 radian = 57.2957795 degree, below is using radian
+
+		int x = (int)(map.getRobot().getRobotLocation().getX());
+		int y = (int)(map.getHeight() - map.getRobot().getRobotLocation().getY());
+		double turn = (int)(180 + map.getRobot().getRobotOrientation());
+		g2d.setColor(Color.blue);
+		AffineTransform transform = new AffineTransform();
+		transform.rotate(Math.toRadians(turn), 0, 0);
+
+		Shape transformed = transform.createTransformedShape(robot);
+		g2d.translate(x,y);
+		g2d.draw(transformed);
+		g2d.fill(transformed);
+		g2d.translate(-x, -y);//revert translate
+		 */
+		g2d = (Graphics2D) g;
+		g2d.scale(5, 5);
+		
+		if(map.getRobot().getRobotOrientation() == 90){
+			g2d.drawImage(robotNORTH,(int)(map.getRobot().getRobotLocation().getX()-3),
+					(int)((map.getHeight() - map.getRobot().getRobotLocation().getY())-5), 6, 10, null);
+		}
+		else if(map.getRobot().getRobotOrientation() == 270){
+			g2d.drawImage(robotSOUTH,(int)(map.getRobot().getRobotLocation().getX()-3),
+					(int)((map.getHeight() - map.getRobot().getRobotLocation().getY())-5), 6, 10, null);
+		}
+		else if(map.getRobot().getRobotOrientation() == 0){
+			g2d.drawImage(robotEAST,(int)(map.getRobot().getRobotLocation().getX()-3),
+					(int)((map.getHeight() - map.getRobot().getRobotLocation().getY())-4), 6, 4, null);
+		}
+		else if(map.getRobot().getRobotOrientation() == 180){
+			g2d.drawImage(robotWEST,(int)(map.getRobot().getRobotLocation().getX()-3),
+					(int)((map.getHeight() - map.getRobot().getRobotLocation().getY())-4), 6, 4, null);
+		}
+
+		if(showAI){
+			ArrayList<Vertex> vertices = graph.getVertices();
+			for(Vertex v: vertices){
+				g2d.setColor(Color.yellow);
+				LinkedList<Edge> edges = v.outEdgesOf();
+				for(Edge e: edges){
+					g2d.drawLine((int)e.fromVertex().getCoordinate().getX(), (int)(map.getHeight() - e.fromVertex().getCoordinate().getY()),
+							(int)e.toVertex().getCoordinate().getX(), (int)(map.getHeight() - e.toVertex().getCoordinate().getY()));
+				}
+				if(v.isGoal()){
+					g2d.setColor(Color.blue);
+				}
+				g2d.drawRect((int)(v.getCoordinate().getX() - 1),
+						(int)((map.getHeight() - v.getCoordinate().getY()) - 1), 2, 2);
+				g2d.fillRect((int)(v.getCoordinate().getX() - 1),
+						(int)((map.getHeight() - v.getCoordinate().getY()) - 1), 2, 2);
+			}
+
+			Stack<Vertex> solution = graph.getSolution();
+			g2d.setColor(Color.red);
+			for(int i = 0; i < solution.size()-1; i++){
+				Vertex v1 = solution.get(i);
+				Vertex v2 = solution.get(i+1);
+				Edge e = graph.getEdge(v1, v2);
+				g2d.drawLine((int)e.fromVertex().getCoordinate().getX(), (int)(map.getHeight() - e.fromVertex().getCoordinate().getY()),
+						(int)e.toVertex().getCoordinate().getX(), (int)(map.getHeight() - e.toVertex().getCoordinate().getY()));
+				g2d.drawRect((int)(v1.getCoordinate().getX() - 1),
+						(int)((map.getHeight() - v1.getCoordinate().getY()) - 1), 2, 2);
+				g2d.fillRect((int)(v1.getCoordinate().getX() - 1),
+						(int)((map.getHeight() - v1.getCoordinate().getY()) - 1), 2, 2);
+				g2d.drawRect((int)(v2.getCoordinate().getX() - 1),
+						(int)((map.getHeight() - v2.getCoordinate().getY()) - 1), 2, 2);
+				g2d.fillRect((int)(v2.getCoordinate().getX() - 1),
+						(int)((map.getHeight() - v2.getCoordinate().getY()) - 1), 2, 2);
+			}
+		}
+
+	}
+
+
+
+}

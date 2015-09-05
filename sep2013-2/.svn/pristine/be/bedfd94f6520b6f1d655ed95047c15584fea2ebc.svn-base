@@ -1,0 +1,203 @@
+%%%%%%LIST OF DELIVERABLE MILESTONES 
+\documentclass[11pt, a4paper]{article}
+\usepackage{times}
+\usepackage{ifthen}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{setspace}
+
+%%% page parameters
+\oddsidemargin -0.0 cm
+\evensidemargin -1 cm
+\textwidth 15 cm
+\topmargin -2.5 cm
+\textheight 25.5 cm
+
+\renewcommand{\baselinestretch}{1.4}\normalsize
+\setlength{\parskip}{0pt}
+
+
+\begin{document}
+
+\vspace*{15pt}
+
+\begin{center}
+\LARGE \bf Software Engineering and Project\\
+Group 2 {\em Coding Pharaohs}\\
+MILESTONES draft for Week 9, Week 10, and Week 11
+
+\end{center}
+
+\section{Milestone for Week 9}
+
+
+\subsection{GUI features}
+
+\begin{enumerate}
+
+\item Map editor redesign
+
+\begin{itemize}
+\item The representation of the robot (indicate the facing direction)
+\item Position the (0,0) point at the botom left rather than top left.
+\item Larger scaled map than the previous one
+\item Use tiles to present the map contents (Suggested by the client at the client meeting Week 7)
+
+\end{itemize}
+
+\item Real-time map generation
+
+\begin{itemize}
+\item Present the current location of the robot
+\item The newly explored area and objects will be presented on the GUI in real-time
+\end{itemize}
+
+\end{enumerate}
+
+\subsection{The manual control of the robot}
+
+\begin {enumerate}
+\item The user can manually control the robot to explore the map
+\item Manually road closure marking
+\end {enumerate}
+
+\subsection{Safety performance}
+
+\begin {enumerate}
+
+\item Movement speed
+
+\begin{itemize}
+\item Provide a speed bar on the GUI to manually control the speed of the robot
+\item The maximum speed should be within a safe value
+\item The primary hypothesis setting for the speed is from 1cm/s to 5cm/s. This hypothesis needs further testing to verify. (It may change depending on the testing data.)
+\end{itemize}
+
+\end {enumerate}
+
+\subsection{Map site testing designed by the group}
+
+\begin {enumerate}
+\item A1 size map with basic features prepared by the group
+\end {enumerate}
+
+\section{Milestone for Week 10}
+
+\subsection{GUI features}
+
+\begin {enumerate}
+
+\item Present traversed path by the robot
+
+\begin{itemize}
+\item Use a different colour on the map to display the traversed path by the robot
+\end{itemize}
+
+\item Machanism for the robot to get to the starting position on map
+
+\begin{itemize}
+\item By clicking a button called ``set location''  to enable the ``go-to-starting-position'' mode of the robot, and click again to disable the mode after correctly set the starting position of the robot
+\item Use mouse motion to drag the robot to the map (Suggested by the client at the client meeting Week 7)
+\end{itemize}
+
+\end {enumerate}
+
+\subsection{AI mode of the robot}
+
+\begin {enumerate}
+\item Automatically follow the road and explore uncleared area
+\item Obstacle and disaster area avoidance
+\item Automatically road closure marking
+\item The robot has the ability to go back to the starting position in AI mode (Exit)
+\end {enumerate}
+
+\subsection{Safety performance}
+
+\begin {enumerate}
+
+\item Collision detection. Once collision happens, the robot should stop immediately. 
+
+Collisions include: 
+
+\begin{itemize}
+\item Hitting obstacles
+\item Entering disaster zones
+\item Off road
+\item Out of map
+\end{itemize}
+
+\item Dangerous zone.
+
+\begin{itemize}
+\item The robot should never go into the dangerous zone. Once it reaches the edge of the area, it will immediately stop.
+\end{itemize}
+
+\end {enumerate}
+
+\subsection{Map site testing designed by the group}
+
+\begin {enumerate}
+\item Put obstacles on the map and test
+\end {enumerate}
+
+\section{Milestone for Week 11}
+
+\subsection{GUI features}
+
+\begin {enumerate}
+
+\item Real-time messages on GUI
+
+\begin{itemize}
+\item There will be a display field on the control panel of the GUI to show real-time messages sent by the robot.
+\item The messages are going to report the status of the robot, including warnings and necessary values that the operator needs to know.
+\end{itemize}
+
+\item Zoom feature for the map
+
+There are two designated methods to implement this feature. The group will choose the better one depending on testing data.
+
+\begin{itemize}
+\item Place a zoom bar under the map to control the size of display area on the map panel. 
+\item Place a smaller full view of the map beside main display of the map panel. The main display will show a certain sized part of the map. The user can drag the rectangle indicator in the full view map or use the scrolling bar to control the display area in the main display. (Suggested by the client at the client meeting Week 4)
+\end{itemize}
+
+\end {enumerate}
+
+\subsection{Manual control mode features}
+
+\begin {enumerate}
+
+\item Manual mode collision detection. Once collision happens, the robot should stop immediately against any manual command from the operator. The definitions for collision have been declared in the milestone for Week 10.
+
+\end {enumerate}
+
+\subsection{AI mode features}
+
+\begin {enumerate}
+
+\item If the robot is forced to stop, it has the ability to continue the uncompleted AI mode exploration once the problems are solved.
+
+\end {enumerate}
+
+\subsection{Safety performance}
+
+\begin {enumerate}
+
+\item Low power performance.
+
+\begin{itemize}
+\item Send warning message to the operator when the battery has 20\% life left.
+\item If the battery has only 5\% life left, the robot will immediately stop.
+\end{itemize}
+
+\item Lost of connection performance. 
+
+\begin{itemize}
+\item Stop, and once connected go to manual control mode.
+\end{itemize}
+
+\end {enumerate}
+
+\end{document}

@@ -1,0 +1,27 @@
+package robotMotorSensorControl;
+
+import robotSideCommsUnit.RobotCommunication;
+import lejos.robotics.navigation.DifferentialPilot;
+
+public class LineFollower extends Thread {
+	//line follower data
+	private int blackVal = 40; // light sensor black value
+	private int whiteVal = 50; // light sensor white value
+	private int midVal = 45; // light sensor mid value
+	private int error = 0; // difference between current sensor value and midVal
+	private double turnRate; // rate of turning
+	private int lightSensorRange = 0; //range of values light sensor can take
+	private final int steeringCoefficient = 2; //the coefficient that determines
+												 //how fast the robot turns relative to the error
+	private double normalisedError = 0.0; // error as a percentage of the lightSensorRange
+	private int [] scan = new int[200]; // line-scanner data-structure
+	private int index;
+	private int width = 0;
+	private boolean reachedVertex = false;
+	private int distanceToTravel;
+	
+	public LineFollower(DifferentialPilot df, SensorInfo si, RobotCommunication rc, )
+	public void run(){
+		
+	}
+}

@@ -1,0 +1,76 @@
+% Group: 	2
+% Name: 	Coding Pharaohs
+% Document: 	Minutes of the fourth client meeting
+% Author:	Matthew Nestor
+% Date:		Saturday September 2 2013
+
+\documentclass[12pt, a4paper]{article}
+\topmargin -1cm
+\title{Minutes of the Fourth Client Meeting}
+\author{\textsc{Coding Pharaohs} (Group 2)}
+\date{September 2, 2013}
+\begin{document}
+\maketitle
+\begin{tabbing}
+\textbf{Chair}~~~~~~~~\=JianQui Li          \\
+\textbf{Secretary}    \>Matthew Nestor      \\
+\textbf{Members}      \>Abdulaziz Alhulayfi \\
+                      \>Bowen Tao           \\
+                      \>Yifei Pei           \\
+                      \>Yu Hong             \\
+\textbf{Apologies}    \>None                \\
+\end{tabbing}
+\section{Time and Place}
+The fourth client meeting for Software Engineering and Project was held in \textbf{Ingkarni
+Wardli, Room 462 \textnormal{at} 2:30pm \textnormal{on} Monday 2 September 2013}.
+\section{Quorum Announcement}
+Having established that all members were present, the meeting was declared open.
+\section{Summary of Previous Meeting}
+Mr.~JianQui Li presented the group milestone, the SRS document draft. The document covered both functional and non-functional
+requirements, automatic and manual modes of operation, user requirements, system features, and external inferface requirements.
+Mr.~Yifei Pei gave a presentation of his individual milestone, the GUI mockup. Features of the GUI included an area to display
+the map; buttons for robot manual control; dangerous zone editing; buttons for map loading and saving; an area for robot
+status feedback to be displayed; robot representation; and battery life and bluetooth signal representations. Lastly, the
+milestones for weeks 9 and 10 were negotiated.
+\section{Group Milestone: Robot movement}
+\subsection{Overview}
+Mr.~Nestor presented the new robot design and movement capabilities.
+\subsection{Detailed Presentation}
+Mr.~Nestor presented the new and fifth incarnation of the robot design. The new model was slightly 
+wider than previous versions, with all motors side by side at the base. Two motors govern the robot's movement, and one motor
+governs the pen mechanism. Unlike previous versions, the pen mechanism is located at the back of the robot, and all sensors are
+located at the front. The bump sensors are joined by a lego strip so that the robot will be able to infer roughly where an object is
+based on what part of the strip is touched.
+
+Mr.~Nestor uploaded a simple program to the robot to demonstrate basic motor functionality. The program was a routine:
+first the robot moved forward 50cm, then backward 50cm, then it rotated 90 degrees clockwise and back again, then 90 degrees
+anticlockwise and back again. Finally, it turned 180 degrees clockwise, lowered the pen mechanism, rotated slightly to draw,
+then raised the pen.
+
+\section{Individual Milestone Reports}
+No individual milestones were reported.
+
+\section{Risk Management: Risk Scenario Analysis}
+The group conducted a risk analysis of the scenario provided. Mr.~Nestor was picked at random to give the presentation. The group
+identified six risk types: technology, tools, people, requirements, organisation, and estimation. These types were expanded upon
+and then applied to the specific scenario. The scenario specific risks identified were language barriers, cultural barriers,
+hospitality failures, and tough deadlines. Tables for risk effects and probabilities were provided for general and scenario-specific
+risks. Please refer to the attached slides for copies of the tables.
+
+\section{Project Administration}
+In the previous meeting, the group was instructed to refine their milestones to be more precise and easy to test. Thus, Mr.~Pei
+prepared and gave the client the necessary supplimentary milestone documentation.
+
+\section{Meeting Feedback}
+\begin{itemize}
+ \item The client was very happy with the robot presentation and the meeting generally
+ \item The lecturer gave the group the marked SRS document draft, for which the group was awarded 51\%. The lecturer assured the
+ group that this was a reasonable mark for a first draft. He noted that specific queries regarding the marking of the SRS draft
+ should be directed to the marker, Chris Johnson. 
+\end{itemize}
+
+\section{Adjournment}
+The next meeting is a group meeting to be held in Ingkarni
+Wardli, Room 462 at 2pm on Thursday 5 September 2013.\\
+The meeting closed at 2:56pm.
+\end{document}

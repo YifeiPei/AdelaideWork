@@ -1,0 +1,233 @@
+% Group: 	2
+% Name: 	Coding Pharaohs
+% Document: 	Second and final draft of the minutes of the first client meeting
+% Author:	Matthew Nestor
+% Date:		Saturday August 18 2013
+
+\documentclass[12pt, a4paper]{article}
+\topmargin -1cm
+\title{Minutes of the First Client Meeting}
+\author{\textsc{Coding Pharaohs} (Group 2)}
+\date{August 12, 2013}
+\begin{document}
+\maketitle
+\begin{tabbing}
+\textbf{Chair}~~~~~~~~\=Yifei Pei           \\
+\textbf{Secretary}    \>Matthew Nestor      \\
+\textbf{Members}      \>Abdulaziz Alhulayfi \\
+                      \>Bowen Tao           \\
+                      \>Jianqui Li          \\
+                      \>Yu Hong             \\
+\textbf{Apologies}    \>None                \\
+\end{tabbing}
+\section{Time and Place}
+The first client meeting for Software Engineering and Project was held in \textbf{Ingkarni
+Wardli, Room 462 \textnormal{at} 2:20pm \textnormal{on} Monday 12 August 2013}.
+\section{Quorum Announcement}
+Having determined that quorum was satisfied, the Chairman Mr.~Pei declared the meeting open.
+\section{Summary of Previous Meeting}
+Not applicable.
+\section{Group Milestone: Poster}
+\subsection{Overview}
+Mr.~Pei presented the group poster the team created to advertise itself.
+He explained the reasoning behind various design decisions, as well as the reasoning behind
+individual members' group roles.
+\subsection{Detailed Presentation}
+\begin{itemize}
+ \item Mr.~Pei explained the rationale behind the group's name, \emph{Cod\-ing Phar\-aohs}.
+First, it is a strong name, implying that the group consists of highly proficient coders.
+Second, there is a link between Ancient Egypt and the Robot Project the group is undertaking.
+The project is to design and programme a robot to safely navigate a d\'ebris-stricken city and
+mark out hazardous zones therein. Robots have a similar role in ancient Egyptian pyramids: 
+they explore and mark out potentially hazardous areas and boobytraps.
+ \item As the team finished the poster well before the deadline, a second poster was made. 
+There was some debate as to which of the posters was preferable. The team asked the client 
+which poster he prefered, but as there is a competition for the best poster, he politely 
+declined to influence our decision. In the end, the group chose the first poster.
+ \item The poster contained information about each team member, including the group roles
+for which they were elected. Thus, Mr.~Pei used the poster presentation to introduce the group
+members' roles.
+They were as follows:
+\begin{tabbing}
+~~~~~~~~~~~~\=Abdulaziz Alhulayfi~~~~~~~~\=Documentation Manager  \\
+            \>Bowen Tao                  \>Quality Control Manager\\
+            \>Jianqui Li                 \>Hardware Manager       \\
+            \>Matthew Nestor             \>Software Manager       \\
+            \>Yifei Pei                  \>Project Manager        \\
+            \>Yu Hong                    \>Testing Manager        \\
+\end{tabbing}
+\end{itemize}
+\section{Individual Milestone Reports}
+No individual milestones were reported.
+\section{Project Administration}
+The lecturer made some points about project administration:
+\begin{itemize}
+ \item The group SVN repository is now available.
+ \item The robot and lab are now available.
+ \item The DTD document and examples will be available early next week.
+ \item Like this meeting, the next meeting, to be held next week, will focus on requirements collection.
+       However, the client will be a different person from this week.
+\end{itemize}
+Mr.~Pei noted a few points of administration:
+\begin{itemize}
+ \item Mr.~Pei shall shortly create and set out the folder structure of the group SVN repository.
+ \item All members shall familiarise themselves with \LaTeX and the SVN repository.
+ \item Mr.~Nestor shall write up the minutes for this meeting in \LaTeX.
+ \item Mr.~Alhulayfi shall write up the agenda for the following meeting in \LaTeX.
+\end{itemize}
+The lecturer agreed to be contactable via email for follow-up questions after client meetings. Mr.~Li, Mr.~Nestor,
+and Mr.~Hong agreed to convene after the meeting to construct a prototype of the robot body.
+\section{Requirements Elicitation}
+The majority of the meeting consisted of interviewing the client for project requirements. This
+was driven by a list of questions compiled by Mr.~Pei, as well as spontaneous questions from
+other members. A paraphrased summary of the questions, and client answers, follows:
+\subsection{Functional Requirements}
+\begin{enumerate}
+ \item \textbf{Mr.~Pei:}       Is the robot intended for use in one specific site, or for use in multiple sites? \\
+       \textbf{Client:}        It is for use in just one site, the XML file for which will be issued soon.
+ \item \textbf{Mr.~Pei:}       Is the software intended for use in one or many robots? \\
+       \textbf{Client:}        Just one robot.
+ \item \textbf{Mr.~Pei:}       To what extent should the robot's operation be automated? Does the robot need to move
+                               with or without an operator? Does the robot need the operator's command to mark road closures? \\
+       \textbf{Client:}        The system should support both manual and automatic modes. Take the following
+                               scenario. In the beginning, a truck will deliver the robot to the edge of the city, for
+                               consider that the robot in reality may be quite large. The robot should begin in automatic mode
+                               and follow the road to the dangerous areas in order to mark the road closures. Manual mode is
+                               crucial from a safety standpoint. For example, if the robot detects an obstacle along its path,
+                               it should be stopped, and it should wait for operator to issue commands.
+ \item \textbf{Mr.~Nestor:}    So should that stopping occur automatically upon detection of an obstacle? \\
+       \textbf{Client:}        That's correct. Basically, the robot will have a bump sensor to detect obstacles.
+                               In natural disasters this will always happen; buildings and other objects will block the
+                               road and you will have to choose another path to get where you want to go.
+ \item \textbf{Mr.~Nestor:}    And at that point, the new path is determined by the user, rather than the robot? Or should
+                               the robot be able to navigate a new path automatically? \\
+       \textbf{Client:}        That is one possible solution. Here's an example. In the description we mention that, for
+                               safety reasons, the robot should always stay on the road; it should never run off the road.
+                               Otherwise it would be very dangerous: the robot could hit buildings or people. In reality,
+                               there is always a possibility that the robot will go off the road. In this case, firstly, the
+                               robot should automatically stop, and wait for manual control from the operator. The operator
+                               can then move the robot back to the road. There are many other situations in which manual
+                               control is necessary. For example, what happens when communication is lost between the robot
+                               and the host system?
+ \item \textbf{Mr.~Pei:}       What should happen once the robot has searched the entire area? \\
+       \textbf{Client:}        The robot should return to the starting point.
+ \item \textbf{Mr.~Pei:}       So the robot should automatically find a path, search the whole city, and when it has finished,
+                               it should return to the starting point? \\
+       \textbf{Client:}        You will already know that something has happened in a particular area of the city. You will
+                               know a point in the city where the disaster is thought to have occured, and there will be a
+                               radius around that point. At any point that a road intersects that radius, a road closure should
+                               be marked. This is the main task of the robot, so it may not be necessary for it to explore the
+                               whole city.
+ \item \textbf{Mr.~Nestor:}    So you're saying that the robot isn't required to make a complete map of the city, only the areas
+                               of the city that have been damaged? \\
+       \textbf{Client:}        Yes.
+ \item \textbf{Mr.~Li:}        So, when the robot meets an obstacle, it needs to record the place of the obstacle? \\
+       \textbf{Client:}        Yes. When the robot detects an object, it should mark it, not the physical map, but on the host
+                               screen.
+ \item \textbf{Mr.~Nestor:}    In the damaged area, should we assume that there are some circumstances under which the robot
+                               must go off-road? \\
+       \textbf{Client:}        The robot should never leave the road. The robot is not allowed to go into the damaged areas; it
+                               simply finds the edge of the affected areas.
+ \item \textbf{Mr.~Pei:}       How does the robot identify the damaged area? \\
+       \textbf{Client:}        The robot has prior knowledge of the affected areas.
+ \item \textbf{Mr.~Nestor:}    How detailed is our knowledge of the city and the affected areas? \\
+       \textbf{Client:}        You will be given a point and a distance around it, for example one hundred metres around that
+                               that point, which represents the dangerous zone. The main task is then to determine which streets
+                               intersect that zone, and mark them.
+ \item \textbf{Mr.~Li:}        Will the obstacles be the same size? \\
+       \textbf{Mr.~Pei:}       Yes, what sorts of shapes and sizes will the obstacles be? \\
+       \textbf{Client:}        You can represent the obstacles as you like. Here are some other requirements I can tell you.
+                               The city will be a scaled down model made out of A1 or A0 paper. The width of the streets will
+                               be 5mm. Intersections will be a solid circle. So, when the robot arives at an
+                               intersection, it detects a circle, and thereby knows it is at an intersection. Then, you need
+                               to think about how to represent obstacles. If you represent obstacles with circles, then you'll
+                               run into trouble.
+ \item \textbf{Mr.~Nestor:}    Perhaps I misunderstood, but I thought the question was, How will the objects be represented
+                               in the physical domain that the robot is trying to navigate? On the paper. For I assume
+                               the robot doesn't know beforehand where the obstacles will be? \\
+       \textbf{Client:}        It's half-half: you will know where some of the obstacles are, and not others, just like in reality.
+                               It's a dynamic situation: yesterday there was no obstacle here, but today there might be. \\
+       \textbf{Mr.~Nestor:}    So what sort of form will these obstacles take? \\
+       \textbf{Client:}        You mean, on the paper? \\
+       \textbf{Mr.~Nestor:}    Yes. \\
+       \textbf{Client:}        Any solid object. Imagine this object is here [client points to mobile phone]. The robot has a
+                               bump sensor which will detect it. After it detects it, it has to mark it on the host side, using
+                               a different shape.
+ \item \textbf{Mr.~Alhulayfi:} How will the sensors recognise shape, whether something is an the obstacle or an intersection? \\
+       \textbf{Client:}        You will have the light sensor for this. So you will need to figure out how to use the light
+                               sensor to detect whether something is a solid line, a circle, or a rectangle.
+ \item \textbf{Mr.~Pei:}       Will the user be on site with the robot, or will it be remotely controlled? \\
+       \textbf{Client:}        It will be operated remotely; the user will be in an office far away, potentially in another city.
+                               This has implications for the whole project. So, the communication between the robot and the host
+                               should happen in real-time. 
+ \item \textbf{Mr.~Pei:}       Given communication must occur in real time, what sort of delay is acceptable? \\
+       \textbf{Client:}        Good question. This is a safety-critical project. Acceptable delay will be less than 0.5 seconds.
+ \item \textbf{Mr.~Pei:}       What kind of graphic user interface will the operator prefer? \\
+       \textbf{Client:}        This question is too vague. \\
+       \textbf{Mr.~Pei:}       Okay. Do you prefer a GUI or command-line control? \\
+       \textbf{Client:}        Definitely a GUI, because a command-line has too much text to know what's happening quickly.
+                               The GUI will have a map so the operator can see what's happening very quickly.
+ \item \textbf{Mr.~Pei:}       How simple do you want the GUI? Will it be operated by an expert, or will many people need to
+                               operate it? \\
+       \textbf{Client:}        This is a technical question that will be covered in a later meeting. You will design a GUI and
+                               show it to the client for feedback. This will happen in week 5 or 6, I think.
+ \item \textbf{Mr.~Pei:}       We've discussed the representations of the dangerous areas, the roads, the obstacles. Is there
+                               anything else, except for the roads and obstacles, such as buildings or walls? \\
+       \textbf{Client:}        You don't have to worry about buildings because we assume the robot always stays on the roads.
+ \item \textbf{Mr.~Nestor:}    Are we going to be given the map of the road as a data-structure first? Or do we have to determine
+                               the map of the road on the basis of the lines on the paper? \\
+       \textbf{Client:}        We give you a DTD, which specifies how to represent the city, the obstacles, the dangerous areas.
+                               We also give you an example. With that example you can draw an initial map.
+\end{enumerate}
+\subsection{Safety Requirements}
+\begin{enumerate}
+ \item \textbf{Mr.~Pei:}       What action should the robot take when power is low or lost? \\
+       \textbf{Client:}        As safety is critical, in such situations the robot should automatically stop and await further
+                               instruction.
+       \textbf{Mr.~Pei:}       Should it give a warning to the operator? \\
+       \textbf{Client:}        Yes. If the robot's power falls below a certain level, you should give a warning.
+ \item \textbf{Mr.~Pei:}       What action should the robot take if communication between the operator and the robot is lost? \\
+       \textbf{Client:}        It should stop.
+ \item \textbf{Mr.~Tao:}       Should the robot be expected to change automatically between automatic and manual modes? \\
+       \textbf{Client:}        You mean, when the robot loses communication with the host? \\
+       \textbf{Mr.~Tao:}       Yes. \\
+       \textbf{Client:}        No, the robot should just stop. Otherwise you'll have trouble; the robot may kill people. Keep in
+                               mind that the robot has survelance equipment, such as a camera. So whenever the robot travels
+                               somewhere, the operator should see a video feed of the surrounding area. But if this feed is lost,
+                               you don't know what the robot is doing, so it's very dangerous.
+ \item \textbf{Mr.~Nestor:}    So we'll have three different types of sensors: the bumper sensor, light sensor, and a camera? \\
+       \textbf{Client:}        You don't have a camera; it is just assumed.
+ \item \textbf{Mr.~Pei:}       What is a safe force with which the robot may make contact with external objects, such as
+                               obstacles? \\
+       \textbf{Client:}        This is an important safety issue, for if the robot make contact with objects with too much force,
+                               it could be damaged. For this reason, the robot should not move very fast; use a slow speed. \\
+       \textbf{Mr.~Pei:}       How do you define the speed limit? What is a slow speed. \\
+       \textbf{Client:}        You should be able to figure this out for yourselves by experimentation.
+ \item \textbf{Mr.~Pei:}       How do you define a safe starting position? \\
+       \textbf{Client:}        As the requirements document specifies, you can assume that a truck will deliver the robot to
+                               the starting position. \\
+       \textbf{Mr.~Pei:}       What if the robot starts in a dangerous zone? \\
+       \textbf{Client:}        In the case, the truck couldn't have delivered it. So you can assume that the robot will start
+                               in a safe area.
+ \item \textbf{Mr.~Pei:}       Is the starting area randomly picked? \\
+       \textbf{Client:}        Yes, but definitely inside the city, not outside.
+       
+\end{enumerate}
+\section{Meeting Feedback}
+The lecturer gave the group some feedback for its performance in its first client meeting. The following is a
+summary of the key points.
+\begin{itemize}
+ \item The chairperson role is a managing role. This includes the allocation of tasks, making sure the meeting finishes on time,
+       and ensuring all items are covered. In this way, the chair doesn't have to do everything.
+ \item Recording minutes is good, but you should also write notes for the minutes as the meeting unfolds. Otherwise, you have
+       to relisten to everything recorded in order to start writing. If you already have hand-written notes, you merely need
+       the recording as a reference.
+ \item The group still hasn't asked all the requirements questions necessary, and should carefully about what to ask for the next
+       meeting.
+\end{itemize}
+
+\section{Adjournment}
+The next meeting is a group meeting to be held in the same place, namely Ingkarni
+Wardli, Room 462 at 2pm on Thursday 15 August 2013.\\
+The meeting closed at 3:12pm.
+\end{document}

@@ -1,0 +1,256 @@
+package robotMotorSensorControl;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import robotSideCommsUnit.RobotCommunication;
+import lejos.nxt.Battery;
+import lejos.nxt.Button;
+import lejos.nxt.LCD;
+import lejos.nxt.Motor;
+import lejos.nxt.SensorPort;
+import lejos.nxt.UltrasonicSensor;
+import lejos.robotics.localization.OdometryPoseProvider;
+import lejos.robotics.navigation.DifferentialPilot;
+import lejos.robotics.navigation.Pose;
+import lejos.robotics.subsumption.Behavior;
+import lejos.util.Delay;
+import lejos.util.Timer;
+import lejos.util.TimerListener;
+import lejos.nxt.comm.RConsole;
+
+/**
+ * the class contains the methods to control the robot to do 
+ * some certain tasks according to the commands received.
+ * @fileName RobotBehaviorControl
+ * @author Yu Hong & Matthew Nestor
+ *
+ */
+
+public class RobotBehaviourControl{
+	private RobotCommunication robotComms;
+	private DifferentialPilot pilot;
+	private LineFollower lineFollower;
+	private RobotStatusMonitor statusMonitor;
+	private volatile int command;
+	private SensorInfo sensor;
+	private UltrasonicSensor range;
+	private int lightValue;
+	private int distance;
+	private int tachoA;
+	private int tachoB;
+	private int speed;
+	private int travelAngle;
+	private OdometryPoseProvider odoPose;
+	private Pose pose;
+	private static final int FOUNDVERTEX = 1;
+
+	/**
+	 * the constructor of the class
+	 */
+	public RobotBehaviourControl(RobotCommunication rb){
+		speed = 30;
+		pilot = new DifferentialPilot(56, 134, Motor.A, Motor.B);  // parameters in cm
+		pilot.setTravelSpeed(speed);
+		pilot.setRotateSpeed(30);
+		sensor = new SensorInfo();
+		robotComms = rb;
+		range = new UltrasonicSensor(SensorPort.S4);
+		odoPose = new OdometryPoseProvider(pilot);
+		pose = odoPose.getPose();
+		pose.setLocation(0, 0);
+		statusMonitor = new RobotStatusMonitor(pilot);
+	}
+
+	/**
+	 * to set the current command and store it to the arraylist
+	 * @param c the concrete command represented as integer
+	 * @return the result value
+	 * @throws IOException
+	 */
+	public int setCommand(int c){
+		command = c;
+		return this.doCommand();
+	}
+
+	/**
+	 * to get the current speed
+	 * @return speed
+	 */
+	public int getSpeed(){
+		return speed;
+	}
+
+	/**
+	 * the method would control the robot to perform certain tasks
+	 * according to the command received.
+	 * @return the result value
+	 * @throws IOException
+	 */
+	public int doCommand() {
+		if (command == -2){
+			try {
+				robotComms.disconnection();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+				LCD.clear();
+				LCD.drawString("Exception: 97\n"+e.getMessage(), 0, 0);
+				while(!Button.ENTER.isDown()){}
+				System.exit(1);
+			}
+		}
+		if (command == 0){
+			statusMonitor.reset();
+			if(lineFollower != null){
+				if(lineFollower.isAlive()){
+					lineFollower.terminate();
+					try {
+						lineFollower.join();
+					} catch (InterruptedException e) {
+						//e.printStackTrace();
+						LCD.clear();
+						LCD.drawString("Exception: 113\n"+e.getMessage(), 0, 0);
+						while(!Button.ENTER.isDown()){}
+						System.exit(1);
+					}
+				}
+			}
+			pilot.stop();
+		}
+		if (command == 1){
+			statusMonitor.reset();
+			pilot.forward();
+		}
+		if (command == 2){
+			statusMonitor.reset();
+			pilot.backward();
+		}
+		if (command == 3){
+			statusMonitor.reset();
+			pilot.rotate(90);
+		}
+		if (command == 4){
+			statusMonitor.reset();
+			pilot.rotate(-90);
+		}
+
+		if(command == 5){
+			pilot.rotate(5);
+			pilot.travel(20);
+		}
+
+		if (command == 11){
+			double batteryVoltage =Battery.getVoltageMilliVolt();
+			double batteryLevel = (batteryVoltage - 7000)/1400.0;
+			batteryLevel = batteryLevel*100;
+			int battery = (int)batteryLevel + 200;
+			return battery;
+		}
+		if (command == 12){
+			lightValue = sensor.getLightValue()+100;
+			LCD.drawString("light = "+String.valueOf(lightValue-100), 0, 5);
+			return lightValue;
+		}
+		if (command == 13){
+			tachoA = Motor.A.getTachoCount();
+			//		Motor.A.resetTachoCount();
+			LCD.drawInt(tachoA,2,4);
+			if (tachoA >= 0){
+				tachoA = tachoA+1000;
+				return tachoA;
+			}
+			if (tachoA < 0){
+				tachoA = tachoA-1000;
+				return tachoA;
+			}
+		}
+		//		if (command == 14){
+		//			tachoB = Motor.B.getTachoCount();
+		//			Motor.A.resetTachoCount();
+		//			LCD.drawInt(tachoB,2,6);
+		//			tachoB = tachoB+1000;
+		//			if (tachoB >= 0){
+		//				tachoB = tachoB+1000;
+		//				return tachoB;
+		//			}
+		//			if (tachoB < 0){
+		//				tachoB = tachoB-1000;
+		//				return tachoB;
+		//			}
+		//		}
+
+		if (command == 15){
+			distance = range.getDistance();
+			distance = distance + 300;
+			return distance;
+		}
+		if (command == 17){
+			statusMonitor.makeTravelReading();
+			int incrementDistance = statusMonitor.getIncrementDistanceTravelled();
+			return incrementDistance + 20000;
+		}
+		if(command == 18){
+			try {
+				robotComms.sendMessage(FOUNDVERTEX);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				LCD.clear();
+				LCD.drawString("Exception: 200\n"+e.getMessage(), 0, 0);
+				while(!Button.ENTER.isDown()){}
+				System.exit(1);
+			}
+		}
+
+
+		//		if (command == 17){
+		//	//		OdometryPoseProvider odoPose = new OdometryPoseProvider(pilot);
+		//	//		Pose pose = odoPose.getPose();
+		//			int x = (int)pose.getX();
+		//			int y = (int)pose.getY();
+		//			LCD.drawInt(x, 6, 1);
+		//			
+		//			return y+20000;
+		//		}
+
+		if (command == 20){
+			pilot.rotate(180);
+			pilot.travel(5);
+			Delay.msDelay(100);
+			Motor.C.setSpeed(30);
+			Motor.C.rotate(-35);
+			pilot.rotate(5);
+			pilot.rotate(-10);
+			pilot.rotate(5);
+			Motor.C.rotate(35);
+			pilot.travel(-5);
+			pilot.rotate(-180);
+			statusMonitor.reset();
+		}
+
+		if (command >=150 && command <=165){
+			speed = command - 150;
+			pilot.setTravelSpeed(speed);
+		}
+
+		if(command >= 21 && command <= 149){
+			//follow line to the next vertex
+			lineFollower = new LineFollower(pilot, this);
+			lineFollower.setDistance(command - 21);
+			lineFollower.start();
+			/*
+			try {
+				lineFollower.join();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+
+			}
+			 */
+
+		}
+
+		return 0;
+	}
+
+}

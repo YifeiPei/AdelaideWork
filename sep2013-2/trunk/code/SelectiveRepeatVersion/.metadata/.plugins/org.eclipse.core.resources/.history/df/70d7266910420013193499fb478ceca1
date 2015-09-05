@@ -1,0 +1,17 @@
+package robotMotorSensorControl;
+
+import lejos.robotics.navigation.DifferentialPilot;
+
+public class RobotStatusMonitor {
+	private DifferentialPilot pilot;
+	private int totalDistanceMoved;
+	private int distanceMoved;
+	private int robotOrientation;
+	
+	public RobotStatusMonitor(DifferentialPilot df){
+		pilot = df;
+		totalDistanceMoved = 0;
+		distanceMoved = 0;
+		robotOrientation = 0;
+	}
+}

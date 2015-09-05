@@ -1,0 +1,146 @@
+%%% Testing Report 
+%% Yifei Pei
+% ID 1611648
+\documentclass[11pt, a4paper]{article}
+\usepackage{times}
+\usepackage{ifthen}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{graphicx}
+
+%%% Page Parameters
+\oddsidemargin -0.5 cm
+\evensidemargin -10.5 cm
+\textwidth 17 cm
+\topmargin -1.2 cm
+\textheight 26 cm
+
+\renewcommand{\baselinestretch}{1.4}\normalsize
+\setlength{\parskip}{0pt}
+
+\begin{document}
+
+\begin{center}
+\huge Testing Report: MapDraw class testing report
+\\\large Prepared by Yifei Pei , ID : 1611648
+\end{center}
+
+
+\section{Introduction}
+
+This testing session focuses on an important part of the GUI, which draws the map on the GUI. The class to do this functionality of GUI is callled MapDraw. In MapDraw, a map data structure that has already been read from the textual formatted .XML data will be implemented in the Map display panel of the GUI. The class itself extends JPanel in Java code so it can manipulate features of JPanel to add the visualised map on the map display panel on GUI. To display the representations of different strucutres inside the map data structure, the MapDraw class implements paintComponent function to activate the painting machanism provided by Java API, Graphics2D, visualising the map into painted components in the panel. To simplify and beautify the painting mechanism, the unexplored zone, the closure, the obstacle, the road, the intersection, and the robot are represented by images that acquired by the group. The the beginning of the class, it will try to read all the images in the class. If any exception occurs in this process, it will be reported to the user. \\
+\\
+The purpose of this unit test is to test if the MapDraw class can correctly turn the map data structure into visualised components on GUI. Here the correctness has two major attributes, the correct position of the representation, thus, the coordinates for the representation, and the correct image painted for the representation. By nature, the representations of different components in the map data structure have been splited into eight parts, the Boundary and Size of the map, the Roads, the Intersections of the roads, the Obstacles, the Closures, the Disaster zones, the Unexplored zone, and the Robot. This testing session is going to propose the test for the correctness of these eight components of the map visualisation. \\
+\\
+To test the correctness of the components that organise the whole visualisation of the map data structure, both white box and black box testing are used. Due to the usage of GUI, the main purpose of the MapDraw class is to show the visualised map to the user, so it is important for the tester to give a black box test to check the mechanism of MapDraw in a user's perspective. Furthermore, the tester has freely access to the source code of this class. A white box that has the depth into the source code is also necessary to make the process smooth, Especially when the positions of different component cannot be identified by human eyes in a very precise context. However, due to the design of the MapDraw class, there are no explicit variables in the class that can be tested by using JUnit. All the information of positions are parameters that are transfered into Graphics2D to draw the components, which are unable to be accessed by external classes. Therefore, this testing session decided to not use JUnit tests for the Mapdraw class but to write `'System.out.print'' functions inside the class to explicitly print out the data required for the test. The `'print out'' method is not a perfect way to test variables communicated inside the class, but due to the constraints of this testing session, this method can easily show the effects inside the class in a very short time. Developers are also able to modify the source code depending on the information provided by `'print out'' functions. \\
+\\
+\section{Testing Cases}
+
+The testing cases of this testing session read an example map provided by the group named `'map5.xml''. The steps for the testing cases for the eight components are: 1. write down the `'print out'' functions for the testing part so it can show the information later in the implementation 2. Open the GUI 3. Read the map 4. check the image of different components: whether they are represented by correct images 5. check the information printed out: if the positions of the components are correct. \\
+
+\subsection{Test Case: The map boundary and size}
+\textbf{Numerical data in white box testing:} 
+The set size for the map displayed on GUI is 900x690. The MapDraw class provided a scale mechanism for the painting function to display the map of any size to be 900x690 large. If the GUI size is adjusted by the user in using, the size of map will also fit the new scale. The size of the map showed in map5.xml is 59x84. The information that it prints out when the GUI read the map is: \\
+\\
+\includegraphics{size1.png}
+\\
+It seems the width and height of the map is not quite precise, but the error is in acceptable level. \\
+\\
+\textbf{The visualised component in black box testing:} 
+The whole map looks like this.\\
+\\
+\includegraphics[width=14cm]{size2.png}
+\\
+\newpage
+
+\subsection{Test Case: The roads}
+\textbf{Numerical data in white box testing:} 
+There are 6 roads prepared in map5.xml. They are all presented by two points, which are [(29,1)(29,41)], [(2,21)(56,21)], [(14,21)(14,66)], [(49,21)(49,66)], [(14,66)(49,66)], [(14,41)(49,41)]. The information that it prints out when the GUI read the map is:\\
+\\
+\includegraphics{road1.png}\\
+\\
+The MapDraw only read the head of the roads and calculate the length of the road to draw the roads on map panel. So far, all the information provided is precise and correct. The calculating method of length is enclosed in the map data structure. The tests for the data structure will show if the calculation method is correct. If the length calculation method has some bugs, the images here will also be displayed incorrectly. \\
+\\
+\textbf{The visualised component in black box testing:} 
+The visualisation of the roads can be seen in the picture of last section.\\
+\\
+
+\subsection{Test Case: The intersections}
+\textbf{Numerical data in white box testing:} 
+There are 8 intersections prepared in map5.xml. They are all presented by points, which are (29,21), (14,21), (14,41), (29,41), (49,21), (49,41), (14,66), (49,66). The information that it prints out when the GUI read the map is:\\
+\\
+\includegraphics{intersection1.png}\\
+\\
+The positions are precise. \\
+\\
+\textbf{The visualised component in black box testing:}
+The visualisation of the intersections can be seen in the picture of the first section.\\
+\\
+
+\subsection{Test Case: obstacles}
+\textbf{Numerical data in white box testing:} 
+There are 2 obstacles prepared in map5.xml. They are both presented by points, which are (56,21) and (14,60). The information that it prints out when the GUI read the map is: \\
+\\
+\includegraphics{obstacle1.png}\\
+\\
+The positions are precise. \\
+\\
+\textbf{The visualised component in black box testing:}
+The visualisation of the obstacles can be seen in the picture of the first section.\\
+\\
+
+\subsection{Test Case: closures}
+\textbf{Numerical data in white box testing:} 
+There is only one closure prepared in map5.xml. It is presented by point, which is (10,21). The information that it prints out when the GUI read the map is:\\
+\\
+\includegraphics{closure1.png}\\
+\\
+The positions are precise. \\
+\\
+\textbf{The visualised component in black box testing:}
+The visualisation of the closures can be seen in the picture of the first section.\\
+\\
+
+\subsection{Test Case: disaster zones}
+\textbf{Numerical data in white box testing:} 
+There are two disaster zones prepared in map5.xml. It is presented by points and radius, which are (4,21 : 3) and (29,41 : 12). The information that it prints out when the GUI read the map is:\\
+\\
+\includegraphics{dz1.png}\\
+\\
+The positions are precise. \\
+\\
+\textbf{The visualised component in black box testing:}
+The visualisation of the disaster zones can be seen in the picture of the first section.\\
+\\
+
+\subsection{Test Case: unexplored zones}
+\textbf{Numerical data in white box testing:} 
+There is one unexplored zone prepared in map5.xml. The starting point of it is (0,70) and the width is 59 while the height is 14. The information that it prints out when the GUI read the map is:\\
+\\
+\includegraphics[width=17cm]{uz1.png}
+\\
+The unexplored zones are splited into small pieces in the MapDraw so when the robot is exploring the map, it can be explored by small chunks but not the whole unexplored zone is unveiled. From the results, the small pieces can be organised to be the large chunk of unexplored zone and the positions are precise. \\
+\\
+\textbf{The visualised component in black box testing:}
+The visualisation of the unexplored zones can be seen in the picture of the first section.\\
+\\
+
+\subsection{Test Case: robot}
+\textbf{Numerical data in white box testing:} 
+The robot status prepared in map5.xml are that: it is facing 90 angles to the left edge of the whole map and its position is (29,1). The information that it prints out when the GUI read the map is:\\
+\\
+\includegraphics{robot1.png}\\
+\\
+The position is precise. \\
+\\
+\textbf{The visualised component in black box testing:}
+The visualisation of the robot can be seen in the picture of the first section.\\
+\\
+
+\section{Conclusion}
+
+From the results presented above, the MapDraw can precisely read all the map information and draw a correct visualised representation of the map data structure. Only one .xml file is not enough for this test. The test also tested another xml file called map4.xml. The correctness of reading that file was the same as this test. Due to the time and work constraints, the test of another file will not be presented in detail here.
+
+\end{document}

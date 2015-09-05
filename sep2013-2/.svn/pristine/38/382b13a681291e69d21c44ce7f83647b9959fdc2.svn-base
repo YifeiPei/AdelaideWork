@@ -1,0 +1,102 @@
+% Group: 	2
+% Name: 	Coding Pharaohs
+% Document: 	SDD incomplete first draft
+% Author:	Matthew Nestor
+% Date:		Tuesday September 10 2013
+
+\documentclass[11pt, a4paper,titlepage]{article}
+\usepackage[pdftex]{graphicx}
+\topmargin -1cm
+
+\begin{document}
+ \begin{titlepage}
+ \centerline{\small The University of Adelaide}
+ \centerline{\small COMP SCI 3006/7015 Software Engineering and Project}
+ \vspace{5cm}
+ \centerline{\bf \huge Software Design Document}
+ \centerline{\bf \huge (SDD)}
+ \vspace{0.5cm}
+ \centerline{\LARGE for}
+ \vspace{0.5cm}
+ \centerline{\bf \huge Road Closure Marking}
+ \centerline{\bf \huge Robot}
+ \vspace{1cm}
+ \centerline{Version 0.1}
+ \vspace{1cm}
+ \centerline{Prepared by Group 2}
+  \end{titlepage}
+ \tableofcontents
+ \newpage
+ {\bf \large Change History}\newline
+
+ \begin{tabular}{| c | c | l |}
+  \hline
+  Date & Version & Reason for Change \\
+  \hline
+  10th Sept & 0.1 & Initial draft \\
+  \hline
+ \end{tabular}
+
+ \newpage
+  \section{Introduction}
+    \subsection{Purpose}
+    SDD, which is abbreviation for Software Design Document, describes the system design in the software project. Specifically, it is needed to transfer a specification into an executable system. This document is the SDD for developing a robot to mark road closures in a city, which is destroyed by a natural disaster.
+This SDD will document the GUI, AI, Robot Move, Map Representation, and Communication that will be utilized in implementing the system for the robot.\\
+    \subsection{Scope}
+    The aim of this project is to develop a prototype of a robot which may be used to produce a map of the ruined city and mark the road closures in order to prevent people from moving into these areas.\\
+\\
+The map includes virtual representations of closures, disaster area, obstacles, the intersection, roads, and unexplored areas. And the physical map includes using cardboard or some rigid material to represent obstacles and put them randomly, and using black lines as roads. The most important is that the robot should detect the disaster area and mark the road closures with a whiteboard marker. And in this procedure, the robot also has to avoid the obstacles and go forward.\\
+\\
+The virtual map will be dynamically displayed on the system Graphical User Interface (GUI), and it is created and exported in the form of an Extensible Markup Language (XML) document.\\
+\\
+Within the map, the robot will move from the start point and explore the whole map so that it can identify where the obstacles are and mark where the road closures are.\\
+\\
+For the purposes of this project the city is no larger than A1 paper size.
+    \subsection{Related Documents}
+    This SDD should be related to the other project documents, namely the Software Project Management Plan (SPMP), the Software Requirement Specification (SRS).\\
+    \\
+    \subsection{Overview}
+    This SDD consists of the following:
+    \begin{itemize}
+    \item Introduction introduces the aims and function of the project;
+    \item System Overview briefly gives a broad outline of the architecture of the project;
+	\item System Architecture and Components Design gives a detailed description of the
+ project architecture, including its composite components;
+	\item Data Design describes the a variety of data structures used in the project;
+	\item Design Details includes the Class, State and Interaction Diagrams in this project;
+	\item Human Interface Design describes the perspective of the
+ user to utilize the robot. 
+ 	\item  Resource Estimates summaries computer resource estimates required for operating
+ the robot.
+    \end{itemize}
+    \subsection{Document Conventions}
+All diagrams unless otherwise noted follow standard UML conventions.
+
+\subsection{Reference}
+Iran Sommerville, 2011, Software Enginnering(9th Edition) 
+
+
+     \vspace{3cm}
+    
+  \newpage
+  \section{Data Design}
+    \subsection{Database Description}
+    Data Design remains not so much consideration in this project, as it is not heavily data driven, and some of considerations has been set by the client early. We identify the relevant subsections of data design below:
+    \begin{itemize}
+    \item Map External Representation
+    \item Map Internal Representation
+    \item Robot Internal Representation
+    \end{itemize}
+    \subsection{Data Structures}
+    \begin{itemize}
+    \item Map External Representation\\
+Map is to be saved in and read from XML format following the DTD presented by the client.In the XML file, attributes distinguished with each other, for instance, closures, obstacles, intersections, roads, disaster areas and unexplored zone will be added. And also, the boundary of map and robot status as a part of attributes will be griven in the XML file.
+\item Map Internal Representation\\
+The function is implemented by the interface name Map in this project.It is a interface defined all of methods to read the map file from XML format via loadMap(String s) method, absorbs the whole attributes on the map through different kinds of methods such as getObstacles(). More specifically,we created Closure, Obstacles, Intersections, Road, DisasterZone, and UnexploredZone objects, and under Map interface we created those methods whic could use these objects to get attributes information. So when loadMap method load a XML file to decode all the attributes, all the information regarding attributes could put into corresponding object and then be gotten correctly by those get methods.
+\item Robot Internal Representation\\
+The function is implemented by the other interface called RobotLocation. It is a interface defined all the methods describing the robot in the virtual map. More specfically, under its interface there are methods which can get the precise robot information from XML file and then set into virtual map so that we can see the robot sign in GUI and also there are methods which can set robot orientation and rotate the robot and finally return the current orientation of robot.   
+    \end{itemize}
+  \subsection{Graph Structure Used in AI}
+The data structure I wrote above will be utilized in AI to make robot explore in the map.Specfically, The Graph class will get data from the map data structure and then make a graph data structure. For instance, vertices are made from the objects such as intersections, closures and so on. And edges are made from the connections between them. Goals are made from vertices then the robot has to travel to, for example, obstacles.    
+  
+\end{document}

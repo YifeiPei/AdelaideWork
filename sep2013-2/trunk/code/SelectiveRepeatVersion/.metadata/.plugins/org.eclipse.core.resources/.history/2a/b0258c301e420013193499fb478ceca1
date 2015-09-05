@@ -1,0 +1,107 @@
+package mapDataStructure;
+
+import java.awt.Point;
+import java.util.ArrayList;
+
+/**
+ * @author Matthew Nestor
+ * @filename Road.java
+ * @package mapDataStructure
+ * @project HostSide
+ * @date 16/10/2013
+ */
+
+public class Road implements RobotLocation {
+	private Point start;
+	private Point end;
+	private Point robotCoordinates;
+	private boolean isClosed;
+	private boolean containsRobot;
+	private int robotOrientation;
+	private ArrayList<Closure> closures;
+
+	public Road(Point ps, Point pe){
+		start = ps;
+		end = pe;
+		robotCoordinates = null;
+		isClosed = false;
+		closures = new ArrayList<Closure>();
+	}
+	
+	public Point getStart(){
+		return start;
+	}
+	
+	public Point getEnd(){
+		return end;
+	}
+	
+	public int getLength(){
+		if (this.isHorizontal()){
+			return (int)(end.getX() - start.getX());
+		}
+		else if(this.isVertical()){
+			return (int)(end.getY() - start.getY());
+		}
+		else
+			return -1;
+	}
+	
+	public boolean isClosed(){
+		return isClosed;
+	}
+	
+	public void setClosed(boolean b){
+		isClosed = b;
+	}
+	
+	public void addClosure(Point p){
+		closures.add(new Closure(p));
+	}
+	
+	public ArrayList<Closure> getClosures(){
+		return closures;
+	}
+	
+	public boolean containsRobot(){
+		return containsRobot;
+	}
+	
+	public Point getRobotLocation(){
+		return robotCoordinates;
+	}
+	
+	public int getRobotOrientation(){
+		return robotOrientation;
+	}
+	
+	public void setContainsRobot(boolean b){
+		containsRobot = b;
+	}
+	
+	public void setRobotLocation(Point p){
+		robotCoordinates = p;
+	}
+	
+	public void setRobotOrientation(int i){
+		robotOrientation = i;
+	}
+
+	public boolean isHorizontal(){
+		if(start.getX()==end.getX())
+			return false;
+		else if(start.getY()==end.getY())
+			return true;
+		else
+			return false;
+	}
+	
+	public boolean isVertical(){
+		if(start.getX()==end.getX())
+			return true;
+		else if(start.getY()==end.getY())
+			return false;
+		else
+			return false;
+	}
+}

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.ui.externaltools.ProgramLaunchConfigurationType">
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_LOCATION" value="/opt/leJOS_NXJ/bin/nxjlink"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_TOOL_ARGUMENTS" value="-o robotSideCommsUnit.BTReceiver.nxj -od BTReceiver.nxd robotSideCommsUnit.BTReceiver"/>
+<stringAttribute key="org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY" value="/home/matthew/University/2013/SEP/Workspace6/SEPProject/RobotSide/bin/robotSideCommsUnit"/>
+</launchConfiguration>

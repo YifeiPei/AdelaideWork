@@ -1,0 +1,49 @@
+\contentsline {section}{\numberline {1}Introduction}{3}{section.1}
+\contentsline {subsection}{\numberline {1.1}Purpose}{3}{subsection.1.1}
+\contentsline {subsection}{\numberline {1.2}Scope}{3}{subsection.1.2}
+\contentsline {subsection}{\numberline {1.3}Overview}{3}{subsection.1.3}
+\contentsline {subsection}{\numberline {1.4}Document Conventions}{4}{subsection.1.4}
+\contentsline {section}{\numberline {2}System Overview}{4}{section.2}
+\contentsline {subsection}{\numberline {2.1}Background}{4}{subsection.2.1}
+\contentsline {subsection}{\numberline {2.2}Technologies Used}{4}{subsection.2.2}
+\contentsline {subsection}{\numberline {2.3}Software Design Overview}{4}{subsection.2.3}
+\contentsline {section}{\numberline {3}System Architecture and Components Design}{4}{section.3}
+\contentsline {subsection}{\numberline {3.1}Architectural Description}{4}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.2}Component Decomposition Description}{6}{subsection.3.2}
+\contentsline {subsubsection}{\numberline {3.2.1}Robot Motor and Sensor Control}{6}{subsubsection.3.2.1}
+\contentsline {subsubsection}{\numberline {3.2.2}Robot Side Communications Unit}{6}{subsubsection.3.2.2}
+\contentsline {subsubsection}{\numberline {3.2.3}Host Side Communications Unit}{6}{subsubsection.3.2.3}
+\contentsline {subsubsection}{\numberline {3.2.4}Controller FSM}{6}{subsubsection.3.2.4}
+\contentsline {subsubsection}{\numberline {3.2.5}Artificial Intelligence Unit}{6}{subsubsection.3.2.5}
+\contentsline {subsubsection}{\numberline {3.2.6}Map Data-Structure}{7}{subsubsection.3.2.6}
+\contentsline {subsubsection}{\numberline {3.2.7}GUI}{7}{subsubsection.3.2.7}
+\contentsline {subsection}{\numberline {3.3}Detailed Components Design Description}{7}{subsection.3.3}
+\contentsline {subsubsection}{\numberline {3.3.1}SensorInfo}{7}{subsubsection.3.3.1}
+\contentsline {subsubsection}{\numberline {3.3.2}RobotBehaviourControl}{8}{subsubsection.3.3.2}
+\contentsline {subsubsection}{\numberline {3.3.3}RobotCommunication}{8}{subsubsection.3.3.3}
+\contentsline {subsubsection}{\numberline {3.3.4}BTReceiver}{8}{subsubsection.3.3.4}
+\contentsline {subsubsection}{\numberline {3.3.5}PCReceiver}{9}{subsubsection.3.3.5}
+\contentsline {subsubsection}{\numberline {3.3.6}PCComms}{9}{subsubsection.3.3.6}
+\contentsline {subsubsection}{\numberline {3.3.7}ControllerFSM}{9}{subsubsection.3.3.7}
+\contentsline {subsubsection}{\numberline {3.3.8}Node}{10}{subsubsection.3.3.8}
+\contentsline {subsubsection}{\numberline {3.3.9}Edge}{10}{subsubsection.3.3.9}
+\contentsline {subsubsection}{\numberline {3.3.10}SearchTree}{10}{subsubsection.3.3.10}
+\contentsline {subsubsection}{\numberline {3.3.11}Pathfinder}{11}{subsubsection.3.3.11}
+\contentsline {subsubsection}{\numberline {3.3.12}Explorer}{11}{subsubsection.3.3.12}
+\contentsline {subsubsection}{\numberline {3.3.13}AiFsm}{11}{subsubsection.3.3.13}
+\contentsline {subsubsection}{\numberline {3.3.14}Map}{12}{subsubsection.3.3.14}
+\contentsline {subsubsection}{\numberline {3.3.15}GuiOfSEP}{12}{subsubsection.3.3.15}
+\contentsline {subsubsection}{\numberline {3.3.16}MapDraw}{12}{subsubsection.3.3.16}
+\contentsline {subsection}{\numberline {3.4}Architectural Alternatives}{13}{subsection.3.4}
+\contentsline {subsection}{\numberline {3.5}Design Rationale}{13}{subsection.3.5}
+\contentsline {section}{\numberline {4}Data Design}{14}{section.4}
+\contentsline {subsection}{\numberline {4.1}Database Description}{14}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}Data Structures}{14}{subsection.4.2}
+\contentsline {section}{\numberline {5}Design Details}{16}{section.5}
+\contentsline {subsection}{\numberline {5.1}Class Diagrams}{16}{subsection.5.1}
+\contentsline {section}{\numberline {6}Human Interface Design}{18}{section.6}
+\contentsline {subsection}{\numberline {6.1}Overview of the User Interface}{18}{subsection.6.1}
+\contentsline {subsection}{\numberline {6.2}Detailed Design of the User Interface}{19}{subsection.6.2}
+\contentsline {subsection}{\numberline {6.3}Graph Structure Used in AI}{23}{subsection.6.3}
+\contentsline {section}{\numberline {7}Resource Estimates}{24}{section.7}
+\contentsline {section}{\numberline {8}Definitions, Acronymns and Abbreviations}{25}{section.8}

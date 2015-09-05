@@ -1,0 +1,114 @@
+% Group: 	2
+% Name: 	Coding Pharaohs
+% Document:	the minutes of the week eight client meeting
+% Author:	Yu Hong
+% Date:		Monday September 16 2013
+
+\documentclass[12pt, a4paper]{article}
+\topmargin -1cm
+\title{Minutes of the Six Client Meeting}
+\author{\textsc{Coding Pharaohs} (Group 2)}
+\date{September 16, 2013}
+\begin{document}
+\maketitle
+\begin{tabbing}
+\textbf{Chair}~~~~~~~~\=Yifei Pei           \\
+\textbf{Secretary}    \>Yu Hong      \\
+\textbf{Members}      \>Abdulaziz Alhulayfi \\
+                      \>Bowen Tao           \\
+                      \>Jianqui Li          \\
+                      \>Matthew Nestor      \\
+\textbf{Apologies}    \>None                \\
+\end{tabbing}
+\section{Time and Place}
+The sixth client meeting for Software Engineering and Project was held in \textbf{Ingkarni
+Wardli, Room 462 \textnormal{at} 2:30pm \textnormal{on} Monday 16 September 2013}.
+\section{Quorum Announcement}
+Having established that all members were present, the Chairman Mr.~Pei declared the meeting open.
+
+\section{Summary of Previous Meeting}
+
+Mr.~Abdulaziz Alhulayfi presented the introductory presentation for the completed SPMP to the client. The presentation introduced the main contents and the structure of the SPMP, and described the team roles and responsibilities, work plan and gatt chart as well as configuration management plan. \\
+\\
+Mr.~Bowen Tao presented the map editor embedded in the GUI to the client. The presentation showed the related functionalities and additional features of the Map Editor, and the client gave some feedback regarding the map edtior for future improvement.\\
+\\
+In addition, the milestone of week eight was also presented to the client, who was very curious about any additional feature we have implemented. 
+\\
+Finally, Mr.~Matthew Nestor as Software Manager presented the proposed Software Architecture (initial version) to the client in order to obtain some suggestions.
+
+\section{Group Milestone:  Configuration Management and Quality Process Assessment presentation}
+
+\subsection{Overview}
+
+Mr.~Bowen Tao presented the introductory presentation for the Configuration Management and Quality Process Assessment.
+
+\subsection{Detailed Presentation}
+The presentation introduced configuration management and quality process assessment, respectively.\\
+\\
+In terms of configuration management, the outcomes of the project, policy for change control and version management, and the
+usage convention of SVN were introduced. The outcomes of the project consist of the documentation (e.g., SRS, SPMP, SDD, and
+User Manual) and a number of versions of software according to the milestone. Policy for change control introduced the
+convention used to label the versions for major documents and the format used to document the source code. Then the SVN
+structure (i.e., the arrangement of folders on the SVN) and the commitment convention were illustrated with the pictures and
+examples on the slides.\\
+\\
+Regarding the quality process assessment, Mr.~Bowen Tao described the process description and quality goals of the project. The processes of this project followed waterfall model, and developers would do the testing after every major stage of coding. As we need to complete several milestones defined by both the lecturers and ourselves, the completion of the milestones become the short-term goals of our group, and we would endeavor to deliver the product with accordance to the milestones in good quality.\\
+
+
+\section{SPMP Feedback}
+The client handed out the SPMP feedback to our group, and gave his comments on the document. The client also provided us a good sample of SPMP for the future improvement of the document.
+
+\section{Group Milestone: Communication}
+
+\subsection{Overview}
+
+Mr.~Abdulaziz Alhulayfi presented the communication functionalities to the client.
+
+\subsection{Detailed Presentation}
+
+The functionalities presented in the client meeting includes the ability to establish the connection between robot and host, the ability to send movement commands from host to robot, the functionality to send light sensor, battery level, tacho sensor and range sensor request from host to robot, and the functionality to respond the light sensor, battery level, tacho sensor and range sensor data from robot to host, which are the week 8 milestone tasks. This presentation showed that we have completed the milestone of week 8 successfully.
+
+
+\section{Milestone negotiation for week 9, 10 and 11}
+
+\subsection{Overview}
+
+Mr.~Yifei Pei presented the milestone negotiation to the client.
+
+\subsection{Detailed Negotiation}
+
+Mr.~Yifei Pei submitted the milestone forms with detailed explanation to the client. \\
+\\
+According to the week 9 milestone form, we would redesign the map editor, implement the real-time mapping and display of current robot location, and implement the function of manually mapping and road closure marking. In terms of safety aspect, we would allow the user to select the movement speed of the robot.\\
+\\
+In terms of the week 10 milestone, the map editor would display the transversed path of the robot in different color, and the function that would set the robot start position on the map would be implemented. In addition, in the automatica mode, the robot would perform automatically mapping, be capable of obstacle avoidance and automatically road closure marking.\\
+\\
+As for week 11 milestone, we would focus on the real time message to display the status of the robot, including the low battery alert. In the manual control mode, we would implement the collision avoidance feature to the robot to ensure its safety.
+
+
+\section{Group Milestone: Progress Report Presentation}
+
+\subsection{Overview}
+
+Mr.~Yifei Pei presented the progress report to the client.
+
+\subsection{Detailed Presentation}
+
+At the beginning of the presentation, Mr.~Yifei Pei illustrated the overall schedule of the project using the Gantt chart, and then introduced the achievements so far we have obtained in the project, such as the SRS and SPMP draft as well as the milestones for week 5,6,7, and 8. He also described the deliverables in the future and our plan for the project during the mid break. Finally, he finished the presentation by explaining the QA diagram to the client.
+
+
+\section{Meeting Feedback}
+\begin{itemize}
+ \item Regarding the SPMP feedback, the client suggested that we need to use some certain software to check the spelling in the document and we should do more reviewing on the document before submitted.
+ 
+ \item As for the communication milestone, the client suggested the group should do more preparation before we demonstrate the milestone.
+ 
+ \item In terms of the milestone negotiation, the client suggested that we alternatively may choose to put the requirement number in the milestone form to trace back to the requirement in the SRS. In addition, the client considered the milestones we made were ambitious and we would do some unit tests or test cases to ensure the product would work properly, as the client regarded that demonstration only is not enough.
+
+\end{itemize}
+
+\section{Adjournment}
+The next meeting is a group meeting to be held in Ingkarni Wardli, Room 462 at 2pm on Thursday 19 September 2013, and the next client meeting will be held at the same place at 2.00pm Tuesday 8 October 2013.\\
+\\
+The meeting closed at 3:10pm.
+\end{document}

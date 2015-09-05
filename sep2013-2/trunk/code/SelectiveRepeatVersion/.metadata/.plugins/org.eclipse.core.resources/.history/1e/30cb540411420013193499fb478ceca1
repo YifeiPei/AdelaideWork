@@ -1,0 +1,39 @@
+package robotMotorSensorControl;
+
+import lejos.robotics.navigation.DifferentialPilot;
+
+public class RobotStatusMonitor {
+	private DifferentialPilot pilot;
+	private int totalDistanceTravelled;
+	private int incrementDistanceTravelled;
+	private double newReading;
+	private double oldReading;
+	private int robotOrientation;
+	
+	public RobotStatusMonitor(DifferentialPilot df){
+		pilot = df;
+		totalDistanceTravelled = 0;
+		incrementDistanceTravelled = 0;
+		robotOrientation = 0;
+	}
+	
+	public void makeReading(){
+		
+	}
+	
+	public void setRobotOrientation(int i){
+		robotOrientation = i;
+	}
+	
+	public int getRobotOrientation(){
+		return robotOrientation;
+	}
+	
+	public int getTotalDistanceTravelled(){
+		return totalDistanceMoved;
+	}
+	
+	public int getIncrementalDistanceTravelled(){
+		
+	}
+}

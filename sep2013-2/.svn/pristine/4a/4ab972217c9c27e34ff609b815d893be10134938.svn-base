@@ -1,0 +1,84 @@
+%%% Testing Report 
+%% JianQiu Li
+% ID 1635717
+\documentclass[11pt, a4paper]{article}
+\usepackage{times}
+\usepackage{ifthen}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{setspace}
+\usepackage{graphicx}
+
+%%% Page Parameters
+\oddsidemargin -0.5 cm
+\evensidemargin -10.5 cm
+\textwidth 17 cm
+\topmargin -1.2 cm
+\textheight 26 cm
+
+\renewcommand{\baselinestretch}{1.4}\normalsize
+\setlength{\parskip}{0pt}
+
+\begin{document}
+
+\begin{center}
+\huge Testing Report: GUI command and PC side communication testing report
+\\\large Prepared by JianQiu Li , ID : 1635717
+\end{center}
+
+
+\section{Introduction}
+
+In the project, the GUICommands class is used to transmit the Commands which is obtained from the mouse actions of operator. We define these commands as int values so that computer and the robot can communicate easily and it is easy for testing. This testing report is used to test the commands before sending to robot, which can ensure the robot could get the right action commands that we want. The testing of these GUI commands is very important, because with this testing report, we could analyze where the communicating problems are happen. For example, if this testing is passed, if there is a communicating problem, it could be happen in robot side. This is why this testing report is important. Thus, in order to give the right commands to the robot, this testing report will cover some commands testing cases. 
+\\
+\\
+In our project, the PC side will execute the methods in GUICommands class and it will send the commands to robot, so in this testing report, we predict the value of these commands, and then, we compare the predicted value of command with the values we get. If the code is right, the predicted value will corresponding with the mouse actions. This is the process of testing for the GUICommands class.
+
+\section{Testing Cases}
+\subsection{Test Case: Emergency Stop Command in GUICommands class}
+\textbf{Functionality:} 
+This testing case is to test the function of Emergency Stop. This testing case ensures the robot could get right command from PC side, so that the robot could have the ability of Emergency Stop at at anytime. \\
+\\
+\includegraphics[scale=0.4]{Pstop.png}
+\\
+\textbf{Testing Output:} In the code of GUICommands class, The value of Emergency Stop is equal to 0, so, the predicted value is equal to 0. The output value from Eclipse testing is 0, the testing is passed.\\
+
+
+
+\newpage
+\subsection{Test Case: Movement Commands in GUICommands class}
+\textbf{Functionality:} 
+This testing case is to test the function of movement control commands on the GUI. It is used to ensure that operators can control the robot by using commands on the GUI.\\
+\includegraphics[scale=0.4]{Pforward.png}\\
+\includegraphics[scale=0.4]{Pbackward.png}\\
+\includegraphics[scale=0.4]{Pturnleft.png}\\
+\includegraphics[scale=0.4]{Pturnright.png}\\
+\textbf{Testing Output:} In the code of GUICommands class, the number of 1,2,3,4 respectively match FORWARD, BACKWARD, TURNLEFT, TURNRIGHT. The predicted value is respectively equal to 1,2,3,4. The output value from Eclipse testing is matched, the testing is passed\\
+\\
+\subsection{Test Case: Marking closures Command in GUICommands classs}
+\textbf{Functionality:} 
+This testing case is to test the function of marking closure commands on the GUI. It is used to ensure that operators can control the robot to mark the closure.\\
+\includegraphics[scale=0.4]{Pmark.png}\\
+\textbf{Testing Output:}In the code of GUICommands class, the value of marking is 20, so  the predicted value is equal to 20. The output value from Eclipse testing is matched, the testing is passed.\\
+\\
+\newpage
+\subsection{Test Case: Disconnect Command in GUICommands class}
+\textbf{Functionality:} 
+This testing case is to test the function of disconnect commands on the GUI. This is used to disconnect the link between PC side and robot.\\
+\includegraphics[scale=0.4]{Pdisconnect.png}\\
+\textbf{Testing Output:}In the code of GUICommands class, the value of disconnect commands is -1, so the predicted value is equal to -1. The output value from Eclipse testing is matched, the testing is passed.\\
+\\
+\subsection{Test Case: BatteryInfo in GUICommands class}
+\textbf{Functionality:} 
+BatteryInfo is defined as a value which is used to be transmitted between robot and PC side. This testing ensures that the transmitted value  is correct.\\
+\includegraphics[scale=0.4]{Prun.png}\\
+\textbf{Testing Output:}In the code of GUICommands class, the value of BatteryInfo commands is 12, so the predicted value is equal to 12. The output value from Eclipse testing is matched, the testing is passed.\\
+\\
+
+\section{Testing results from Junit}
+\includegraphics[scale=0.6]{Junit.png}\\
+All the testing cases are passed.
+
+
+\end{document}

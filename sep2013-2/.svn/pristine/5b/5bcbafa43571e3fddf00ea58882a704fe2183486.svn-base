@@ -1,0 +1,91 @@
+% Group: 	2
+% Name: 	Coding Pharaohs
+% Document: 	Minutes of the fifth client meeting
+% Author:	Yifei Pei
+% Date: Monday 9 September 2013
+
+\documentclass[12pt, a4paper]{article}
+\topmargin -1cm
+\title{Minutes of the Fifth Client Meeting}
+\author{\textsc{Coding Pharaohs} (Group 2)}
+\date{September 9, 2013}
+
+\begin{document}
+\maketitle
+
+\begin{tabbing}
+\textbf{Chair}~~~~~~~~\=Metthew Nestor          \\
+\textbf{Secretary}    \>Yifei Pei      \\
+\textbf{Members}      \>Abdulaziz Alhulayfi \\
+                      \>Bowen Tao           \\
+                      \>Jianqiu Li           \\
+                      \>Yu Hong             \\
+\textbf{Apologies}    \>None                \\
+\end{tabbing}
+
+\section{Time and Place}
+
+The fifth client meeting for Software Engineering and Project was held in \textbf{Ingkarni
+Wardli, Room 462 \textnormal{at} 2:30pm \textnormal{on} Monday 9 September 2013}.
+
+\section{Quorum Announcement}
+
+Having established that all members were present, the meeting was declared open.
+
+\section{Summary of Previous Meeting}
+
+Mr.~Matthew Nestor presented the risk management, which contains the general risk management plan for the project and specific analysis for the scenario proposed by the lecturers before the meeting. The client was quite happy with this risk management plan. \\
+\\
+Mr.~Matthew Nestor later gave a presentation of the milestone for week 6 as well. The robot could move forward, backward, and rotate as described in the milestone. An additional feature was also added into the milestone that the robot can use the marker located at the back of the robot to write lines on the surface of the map. \\
+\\
+Mr.~Yifei Pei submitted the supplementary document for the group self-defined milestones to the client as a reference for the milestone forms submitted in Week 5. The supplementary document could help the group track the completion of the milestones in more details.
+
+\section{Group Milestone: SPMP presentation}
+
+\subsection{Overview}
+
+Mr.~Abdulaziz Alhulayfi presented the introductory presentation for the completed SPMP to the client.
+
+\subsection{Detailed Presentation}
+
+The presentation briefly introduced the main contents and the structure of the SPMP. The emphasises were team roles and responsibilities, work plan and gantt chart, and configuration management plan. The client also asked some questions to the group to see if all the group members had equal understandings about the project management plan. The gantt chart showed to the client was not completely finished at that time, but later it was finished and submitted within the SPMP document.
+
+\section{Group Milestone: Map editor}
+
+\subsection{Overview}
+
+Mr.~Bowen Tao presented the map editor embeded in the GUI to the client.
+
+\subsection{Detailed Presentation}
+
+The presetation showed the functionalities of ``load XML map'', ``show map display'', ``specify dangerous zones'', ``save XML map and reload'', ``display obstacles on the map'', and the additional feature of the implementation of shortcuts. So far the map editor can only display the DTD file provided by the lecturers on forum. No changes can be made by the GUI to the map and no other XML files containing map information were available for the map editor to implement. The map editor still faced three problems: 1. The robot representation still couldn't be displayed. 2. The size of the map editor was a bit small. 3. The ( 0 , 0 ) point should be positioned at the botom left of the map but not the top left of the map.
+
+\section{Further features of the robot}
+
+The client asked for more features of the robot, so the group showed some features that should be presented for the milestone of Week 8 to the client. \\
+\\
+There were mainly three features showed to the client:
+\begin{enumerate}
+\item The robot can be connected to the PC host by using bluetooth.
+\item The user can use GUI to manually control the robot remotely through bluetooth. The functions included forward, backward, rotation, and stop.
+\item The robot move in AI mode. The functions included identifying the road and moving following the road, obstacle detection, and emergency stop.
+\end{enumerate}
+
+\section{Project Administration}
+
+Mr.~Matthew Nestor as Software Manager presented the proposed Software Architecture (initial version) to the client to ask for suggestions. The architecture was produced following the finite state machine model and contained some machanisms for AI considerations since the robot is going to execute some AI requests. Depending on the feedback of the client, some definitions about the AI machanism were clear to the Software Manager and he was able to improve the architecture.
+
+\section{Meeting Feedback}
+\begin{itemize}
+ \item The client was surprised and happy to see the group went one step further than the original milestones.
+ \item For the SPMP gantt chart, the client specified the overlap for the phase of implementation and unit testing and the phase of integration and system testing was a bit large as at least there are going to be four weeks when the two process are executed together. Perhaps the group can discuss about the workload and reschedule them to make a more reasonable work plan.
+ \item For the map editor on GUI, the client suggested the group to try to use small grids to represent the map. The benefits include easy conversion from unexplored area to explored area, better representation for different features, and easy calculation of distances between different objects.
+ \item The client suggested a machanism for the map editor that the user can drag the representation of the robot on the map to specify starting position for the robot. We are encouraged to use more mouse motion listener functions to make the GUI user friendly.
+ \item The client gave some suggestions on the proposed Software Architecture and the AI algorithms based on the architecture. The Software Manager can try to modify the architecture and the algorithm design for the system as well as the SDD document.
+\end{itemize}
+
+\section{Adjournment}
+The next meeting is a group meeting to be held in Ingkarni Wardli, Room 462 at 2pm on Thursday 12 September 2013, and the next client meeting will be held at the same place at 2.30pm Monday 16 September 2013.\\
+\\
+The meeting closed at 3:10pm.
+\end{document}

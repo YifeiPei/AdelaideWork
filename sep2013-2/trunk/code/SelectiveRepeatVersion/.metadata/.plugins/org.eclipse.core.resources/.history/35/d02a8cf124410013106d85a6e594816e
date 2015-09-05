@@ -1,0 +1,21 @@
+package artificialIntelligenceUnit;
+
+import java.util.ArrayList;
+
+public class Action {
+	private ArrayList<String> actions;
+	private int distance;
+	
+	public Action(ArrayList<String> s, int i){
+		actions = s;
+		distance = i;
+	}
+	
+	public ArrayList<String> getAction(){
+		return actions;
+	}
+	
+	public int getDistance(){
+		return distance;
+	}
+}

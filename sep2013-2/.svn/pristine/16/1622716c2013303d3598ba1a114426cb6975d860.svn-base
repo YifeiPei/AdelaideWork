@@ -1,0 +1,776 @@
+package artificialIntelligenceUnit;
+
+import java.awt.Point;
+import java.awt.geom.Point2D;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.Stack;
+
+import mapDataStructure.Closure;
+import mapDataStructure.DisasterZone;
+import mapDataStructure.Intersection;
+import mapDataStructure.Obstacle;
+import mapDataStructure.Road;
+import mapDataStructure.Map;
+import mapDataStructure.RobotLocation;
+//import java.awt.*;
+
+/**
+ * @author Matthew Nestor
+ * @filename Graph.java
+ * @package artificialIntelligenceUnit
+ * @project HostSide
+ * @date 16/10/2013
+ */
+
+public class Graph{
+	private Map map;
+	private ArrayList<Vertex> vertices;
+	private Stack<Vertex> solution;
+	private Deque<Action> solutionActions;
+	private Deque<Vertex> goals;
+	private int width;
+	private int height;
+
+	public Graph(Map m){
+		map = m;
+		height = map.getHeight();
+		width = map.getWidth();
+		vertices = new ArrayList<Vertex>();
+		goals = new ArrayDeque<Vertex>();
+		solutionActions = new ArrayDeque<Action>();
+	}
+
+	public Vertex addVertex(int index, Point p){
+		Vertex newVertex = new Vertex(index, p);
+		vertices.add(newVertex);
+		return newVertex;
+	}
+
+	public Vertex addVertex(int index, Point p, boolean b){
+		Vertex newVertex = new Vertex(index, p, b);
+		vertices.add(newVertex);
+		return newVertex;
+	}
+
+	public Edge addEdge(int fromVertex, int toVertex, int weight, String action){
+		Vertex v1 = vertices.get(fromVertex);
+		Vertex v2 = vertices.get(toVertex);
+		Edge e = new Edge(weight, v1, v2, action);
+		v1.addEdge(e);
+		return e;
+	}
+
+	public Edge addEdge(Vertex fromVertex, Vertex toVertex, int weight, String action){
+		Edge e = new Edge(weight, fromVertex, toVertex,action);
+		fromVertex.addEdge(e);
+		return e;
+	}
+
+	public void removeEdge(Edge e){
+		removeEdge(e.fromVertex(),e.toVertex());
+	}
+
+	public void removeEdge(Vertex fromVertex, Vertex toVertex){
+		if(containsEdge(fromVertex,toVertex)){
+			fromVertex.removeEdge(toVertex);
+		}
+	}
+
+	public Vertex getVertex(int x, int y){
+		return vertices.get(x*width + y);
+	}
+
+	public LinkedList<Edge> outEdgesOf(Vertex v){
+		return v.outEdgesOf();
+	}
+
+	public boolean containsVertex(Point p){
+		for(Vertex v: vertices){
+			if(v.getCoordinate().equals(p)){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean containsEdge(Edge e){
+		return containsEdge(e.fromVertex(),e.toVertex());
+	}
+
+	public boolean containsEdge(Vertex fromVertex, Vertex toVertex){
+		LinkedList<Edge> outEdges = fromVertex.outEdgesOf();
+		for(int i = 0; i < outEdges.size(); i++){
+			Edge e = outEdges.get(i);
+			if(e.toVertex()==toVertex)
+				return true;
+		}
+		return false;
+	}
+
+	public Edge getEdge(Vertex fromVertex, Vertex toVertex){
+		LinkedList<Edge> outEdges = fromVertex.outEdgesOf();
+		for(int i = 0; i < outEdges.size(); i++){
+			Edge e = outEdges.get(i);
+			if(e.toVertex()==toVertex)
+				return e;
+		}
+		return null;
+	}
+
+	public ArrayList<Vertex> getVertices(){
+		return vertices;
+	}
+
+	public Stack<Vertex> getSolution(){
+		return solution;
+	}
+
+	public int getHeight(){
+		return height;
+	}
+
+	public int getWidth(){
+		return width;
+	}
+
+	public int getSize(){
+		return height*width;
+	}
+
+	public int calcWeight(int w1, int w2){
+		if((w2 - w1) > 0)
+			return 1 + w2 - w1;
+		else
+			return 1;
+	}
+
+	public ArrayList<String> actions(Vertex state){
+		boolean hasNorth = false;
+		boolean hasSouth = false;
+		boolean hasWest = false;
+		boolean hasEast = false;
+		ArrayList<String> theActions = new ArrayList<String>();
+		LinkedList<Edge> edges = state.outEdgesOf();
+		for(Edge e: edges){
+			if(e.getAction().equals("NORTH"))
+				hasNorth = true;
+			else if(e.getAction().equals("SOUTH"))
+				hasSouth = true;
+			else if(e.getAction().equals("WEST"))
+				hasWest = true;
+			else if(e.getAction().equals("EAST"))
+				hasEast = true;
+		}
+		if(hasNorth)
+			theActions.add("NORTH");
+		if(hasSouth)
+			theActions.add("SOUTH");
+		if(hasWest)
+			theActions.add("WEST");
+		if(hasEast)
+			theActions.add("EAST");
+		return theActions;
+	}
+
+	public Vertex transition(Vertex state, String action){
+		LinkedList<Edge> outEdges = state.outEdgesOf();
+		for(Edge e: outEdges){
+			if(e.getAction().equals(action)){
+				return e.toVertex();
+			}
+		}
+		return null;
+	}
+
+	public int stepCost(Vertex state, String action){
+		LinkedList<Edge> edges = state.outEdgesOf();
+		for(Edge e: edges){
+			if(e.getAction().equals(action))
+				return e.getWeight();
+		}
+		return 0;
+	}
+
+	public Node childNodeOf(Node parent, String action, int priorityCount){
+		Node childNode = new Node(transition(parent.getState(), action),
+				parent, action, priorityCount,
+				parent.getPathCost()+stepCost(parent.getState(), action));
+		return childNode;
+	}
+
+	public boolean goalTest(Vertex initial, Vertex goal){
+		return(initial==goal);
+	}
+
+	public Stack<Vertex> solution(Node n, Stack<Vertex> solutionSet){
+		solutionSet.push(n.getState());
+		if(n.isInitial())
+			return solutionSet;
+		else
+			return solution(n.getParent(), solutionSet);
+	}
+
+	private Stack<Vertex> AStarSearch(Vertex start, Vertex goal)
+	{
+		int count = 0;
+		Node initial = new Node(start, start.index());
+		euclideanHeuristic(initial, goal);
+		Stack<Vertex> solutionSet = new Stack<Vertex>();
+		PriorityQueue<Node> frontier = new PriorityQueue<Node>(100, new AStarComparator());
+		frontier.add(initial);
+		Set<Vertex> explored = new HashSet<Vertex>();
+
+		while(true)
+		{
+			if(frontier.isEmpty())
+				return null;
+			Node n = frontier.poll();
+			if(goalTest(n.getState(), goal))
+				return solution(n, solutionSet);
+			explored.add(n.getState());
+			ArrayList<String> possibleActions = actions(n.getState());
+			for(String s: possibleActions)
+			{
+				count++;
+				Node child = childNodeOf(n, s, count);
+				euclideanHeuristic(child, goal);
+				if(!explored.contains(child.getState()) &&
+						!frontier.contains(child))
+				{
+					frontier.add(child);
+				}
+				else
+				{
+					boolean costsLess = false;
+					Iterator itr = frontier.iterator();
+					while(itr.hasNext())
+					{
+						Node m = (Node)itr.next();
+						if(m.getState()==child.getState())
+						{
+							if(m.getAStarCost() > child.getAStarCost())
+							{
+								itr.remove();
+								costsLess = true;
+							}
+						}
+					}
+					if(costsLess)
+						frontier.add(child);
+				}
+			}
+		}
+	}
+
+	private void euclideanHeuristic(Node node, Vertex goal){
+		Point p1 = node.getState().getCoordinate();
+		Point p2 = goal.getCoordinate();
+		double xDist = Math.abs(p1.getX() - p2.getX());
+		double yDist = Math.abs(p1.getY() - p2.getY());
+		node.getState().setHeuristic(Math.hypot(xDist, yDist));
+	}
+
+	public Deque<Action> getActions(){
+		for(int i = solution.size()-1; i > 0; i--){
+			Vertex v1 = solution.get(i);
+			Vertex v2 = solution.get(i-1);
+			Edge e = getEdge(v1, v2);
+			System.out.println(e.getAction()+" "+e.getWeight());
+			if(solutionActions.add(new Action(e.getAction(), e.getWeight()))){
+				System.out.println("Successfully added action...");
+			}
+			//System.out.println("Vector "+solution.get(i).index());
+		}
+		return solutionActions;
+	}
+
+	public void updateGraph(){
+		MyInt index = new MyInt(0);
+		Road startRoad = (Road)map.getRobot();
+		Point startRobot = map.getRobot().getRobotLocation();
+		//System.out.println("BEGIN:\n    Create vertex 0");
+		Vertex start = addVertex(index.getValue(), startRobot);
+		start.setInitial(true);
+		populateGraph(start, startRoad, startRoad.getStart(), index);
+		populateGraph(start, startRoad, startRoad.getEnd(), index);
+		solution = AStarSearch(start, goals.remove());
+		/*
+		for(int i = 0; i < goals.size(); i++){
+			solution = AStarSearch(start, goals.get(i));
+			System.out.println("Goal "+goals.get(i).getCoordinate());
+			for(int j = solution.size()-1; j > 0; j--){
+				Vertex v1 = solution.get(j);
+				Vertex v2 = solution.get(j-1);
+				Edge e = getEdge(v1, v2);
+				System.out.println(e.getAction()+" "+e.getWeight());
+				//System.out.println("Vector "+solution.get(i).index());
+			}
+			System.out.println();
+		}
+		 */
+	}
+
+	private void populateGraph(Vertex start, Road currentRoad, Point end, MyInt index){
+		if(start.getCoordinate().equals(end)){
+			return;
+		}
+		Point closestPoint = end;
+		boolean deadEnd = true;
+		boolean needsMarking = false;
+		boolean isIntersection = false;
+		Road nextRoad = null;
+		boolean isHorizontal = (start.getCoordinate().getY() == closestPoint.getY());;
+		int weight = 0;
+		//System.out.println("Start\n    start.getCoordinate() = "+start.getCoordinate());
+		//System.out.println("    closestPoint = "+closestPoint+"\n");
+
+		ArrayList<Intersection> intersections = map.getIntersections();
+		for(Intersection i: intersections){
+			if(isInBetween(start.getCoordinate(), closestPoint, i.getLocation())
+					&& !start.getCoordinate().equals(i.getLocation())){
+				closestPoint = i.getLocation();
+				//System.out.println("    Change!\n    Intersection:\n    closestPoint = "+closestPoint+"\n");
+				isHorizontal = (start.getCoordinate().getY() == closestPoint.getY());
+				isIntersection = true;
+				deadEnd = false;
+			}
+		}
+
+		ArrayList<DisasterZone> disasterZones = map.getDisasterZones();
+		for(DisasterZone dz: disasterZones){
+			CollisionResult ct = testCollision(start.getCoordinate(), closestPoint, dz.getLocation(), dz.getRadius());
+			if(ct.collision()){
+				if(!ct.twoCollisions()){
+					if(isInBetween(start.getCoordinate(), closestPoint, ct.firstCollision())){
+						isIntersection = false;
+						needsMarking = true;
+						deadEnd = false;
+						if(start.getCoordinate().getX() == closestPoint.getX()){
+							if(start.getCoordinate().getY() < ct.firstCollision().getY()){
+								closestPoint = new Point((int)start.getCoordinate().getX(),
+										(int)(ct.firstCollision().getY()-1));
+							}else{
+								closestPoint = new Point((int)start.getCoordinate().getX(),
+										(int)(ct.firstCollision().getY()+1));
+							}
+
+						}else if(start.getCoordinate().getY() == closestPoint.getY()){
+							if(start.getCoordinate().getX() < ct.firstCollision().getX()){
+								closestPoint = new Point((int)(ct.firstCollision().getX()-1),
+										(int)start.getCoordinate().getY());
+							}else{
+								closestPoint = new Point((int)(ct.firstCollision().getX()+1),
+										(int)start.getCoordinate().getY());
+							}
+						}
+
+						//System.out.println("    Change!\n    Disaster Zone, One Collision:\n    closestPoint = "+closestPoint+"\n");
+					}
+				}
+				else{
+					double d1 = euclideanDistance(start.getCoordinate(), (Point)ct.firstCollision());
+					double d2 = euclideanDistance(start.getCoordinate(), (Point)ct.secondCollision());
+					if(d1 < d2){
+						//closure to first collision
+						if(isInBetween(start.getCoordinate(), closestPoint, ct.firstCollision())){
+							isIntersection = false;
+							needsMarking = true;
+							deadEnd = false;
+							if(start.getCoordinate().getX() == closestPoint.getX()){
+								if(start.getCoordinate().getY() < ct.firstCollision().getY()){
+									closestPoint = new Point((int)start.getCoordinate().getX(),
+											(int)(ct.firstCollision().getY()-1));
+								}else{
+									closestPoint = new Point((int)start.getCoordinate().getX(),
+											(int)(ct.firstCollision().getY()+1));
+								}
+
+							}else if(start.getCoordinate().getY() == closestPoint.getY()){
+								if(start.getCoordinate().getX() < ct.firstCollision().getX()){
+									closestPoint = new Point((int)(ct.firstCollision().getX()-1),
+											(int)start.getCoordinate().getY());
+								}else{
+									closestPoint = new Point((int)(ct.firstCollision().getX()+1),
+											(int)start.getCoordinate().getY());
+								}
+							}
+							//System.out.println("Change!\n    Disaster Zone, Two Collisions:\n    closestPoint = "+closestPoint+"\n");
+						}
+					}
+					else{
+						//closure to second collision
+						if(isInBetween(start.getCoordinate(), closestPoint, ct.secondCollision())){
+							isIntersection = false;
+							needsMarking = true;
+							deadEnd = false;
+							if(start.getCoordinate().getX() == closestPoint.getX()){
+								if(start.getCoordinate().getY() < ct.secondCollision().getY()){
+									closestPoint = new Point((int)start.getCoordinate().getX(),
+											(int)(ct.secondCollision().getY()-1));
+								}else{
+									closestPoint = new Point((int)start.getCoordinate().getX(),
+											(int)(ct.secondCollision().getY()+1));
+								}
+
+							}else if(start.getCoordinate().getY() == closestPoint.getY()){
+								if(start.getCoordinate().getX() < ct.secondCollision().getX()){
+									closestPoint = new Point((int)(ct.secondCollision().getX()-1),
+											(int)start.getCoordinate().getY());
+								}else{
+									closestPoint = new Point((int)(ct.secondCollision().getX()+1),
+											(int)start.getCoordinate().getY());
+								}
+							}
+							//System.out.println("Change!\n    Disaster Zone, Two Collisions:\n    closestPoint = "+closestPoint+"\n");
+						}
+					}
+				}
+				isHorizontal = (start.getCoordinate().getY() == closestPoint.getY());
+			}
+		}
+
+		ArrayList<Obstacle> obstacles = map.getObstacles();
+		for(Obstacle o: obstacles){
+			if(isInBetween(start.getCoordinate(), closestPoint, o.getLocation())
+					&& !start.getCoordinate().equals(o.getLocation())){
+				closestPoint = o.getLocation();
+				//System.out.println("    Change!\n    Obstacle:\n    closestPoint = "+closestPoint+"\n");
+				isIntersection = false;
+				needsMarking = true;
+				deadEnd = false;
+				isHorizontal = (start.getCoordinate().getY() == closestPoint.getY());
+			}
+		}
+
+		ArrayList<Road> roads = map.getRoads();
+		for(Road r: roads){
+			ArrayList<Closure> closures = r.getClosures();
+			for(Closure c: closures){
+				if(isInBetween(start.getCoordinate(), closestPoint, c.getLocation())
+						&& !start.getCoordinate().equals(c.getLocation())){
+					closestPoint = c.getLocation();
+					//System.out.println("    Change!\n    Closure:\n    closestPoint = "+closestPoint+"\n");
+					needsMarking = false;
+					isIntersection = false;
+					deadEnd = true;
+				}
+			}
+		}
+
+		if(!containsVertex(closestPoint)){
+
+			index.increment();
+			//System.out.println("    Create vertex "+ index);
+			if(deadEnd){
+				Vertex v = addVertex(index.getValue(), closestPoint);
+				weight = (int)euclideanDistance(start.getCoordinate(), v.getCoordinate());
+				if(isHorizontal){
+					if(start.getCoordinate().getX() < v.getCoordinate().getX()){
+						addEdge(start, v, weight, "EAST");
+						addEdge(v, start, weight, "WEST");
+					}
+					else{
+						addEdge(v, start, weight, "EAST");
+						addEdge(start, v, weight, "WEST");
+					}
+				}
+				else{
+					if(start.getCoordinate().getY() < v.getCoordinate().getY()){
+						addEdge(start, v, weight, "NORTH");
+						addEdge(v, start, weight, "SOUTH");
+					}
+					else{
+						addEdge(v, start, weight, "NORTH");
+						addEdge(start, v, weight, "SOUTH");
+					}
+				}
+				return;
+			}
+			else if(isIntersection){
+				//System.out.println("    isIntersection = "+isIntersection);
+				Vertex v = addVertex(index.getValue(), closestPoint);
+				weight = (int)euclideanDistance(start.getCoordinate(), v.getCoordinate());
+				if(isHorizontal){
+					if(start.getCoordinate().getX() < v.getCoordinate().getX()){
+						addEdge(start, v, weight, "EAST");
+						addEdge(v, start, weight, "WEST");
+					}
+					else{
+						addEdge(v, start, weight, "EAST");
+						addEdge(start, v, weight, "WEST");
+					}
+				}
+				else{
+					if(start.getCoordinate().getY() < v.getCoordinate().getY()){
+						addEdge(start, v, weight, "NORTH");
+						addEdge(v, start, weight, "SOUTH");
+					}
+					else{
+						addEdge(v, start, weight, "NORTH");
+						addEdge(start, v, weight, "SOUTH");
+					}
+				}
+				for(Road r: roads){
+					if(isInBetween(r.getStart(), r.getEnd(), v.getCoordinate())){
+						populateGraph(v, r, r.getStart(), index);
+						populateGraph(v, r, r.getEnd(), index);
+					}
+				}
+				return;
+			}
+			else if(needsMarking){
+				Vertex v = addVertex(index.getValue(), closestPoint, true);
+				weight = (int)euclideanDistance(start.getCoordinate(), v.getCoordinate());
+				goals.add(v);
+				if(isHorizontal){
+					if(start.getCoordinate().getX() < v.getCoordinate().getX()){
+						addEdge(start, v, weight, "EAST");
+						addEdge(v, start, weight, "WEST");
+					}
+					else{
+						addEdge(v, start, weight, "EAST");
+						addEdge(start, v, weight, "WEST");
+					}
+				}
+				else{
+					if(start.getCoordinate().getY() < v.getCoordinate().getY()){
+						addEdge(start, v, weight, "NORTH");
+						addEdge(v, start, weight, "SOUTH");
+					}
+					else{
+						addEdge(v, start, weight, "NORTH");
+						addEdge(start, v, weight, "SOUTH");
+					}
+				}
+				return;
+			}
+
+			return;
+		}
+	}
+
+	private double dotProduct(Point p1, Point p2){
+		return ((p1.getX()*p2.getX()) + (p1.getY()*p2.getY()));
+	}
+
+	private double euclideanDistance(Point p1, Point p2){
+		return sqrt( sq(p2.getX() - p1.getX()) + sq(p2.getY() - p1.getY()));
+	}
+
+	private double sq(double d){
+		return d*d;
+	}
+
+	private double sqrt(double d){
+		return Math.sqrt(d);
+	}
+
+	private CollisionResult testCollision(Point A, Point B, Point C, double r){
+		boolean isVertical;
+		double Ax = A.getX();
+		double Ay = A.getY();
+		double Bx = B.getX();
+		double By = B.getY();
+		double Cx = C.getX();
+		double Cy = C.getY();
+
+		double ABlength = euclideanDistance(A, B);
+
+		double Dx = (Bx-Ax)/ABlength;
+		double Dy = (By-Ay)/ABlength;
+		//System.out.println("Dx ="+Dx);
+		//System.out.println("Dy ="+Dy);
+		isVertical = (Dx == 0.0);
+		double t = Dx*(Cx-Ax) + Dy*(Cy-Ay);
+
+		double Ex = t*Dx+Ax;
+		double Ey = t*Dy+Ay;
+
+		double EClength = sqrt(sq(Ex-Cx) + sq(Ey-Cy));
+
+		if((EClength < r) && !isVertical)
+		{
+			//System.out.println("EClength = "+EClength);
+			double dt = sqrt(sq(r) - sq(EClength));
+			double Fx = (t-dt)*Dx + Ax;
+			double Fy = (t-dt)*Dy + Ay;
+			double Gx = (t+dt)*Dx + Ax;
+			double Gy = (t+dt)*Dy + Ay;
+			if(euclideanDistance(B, C) <= r){
+				return new CollisionResult(true, new Point((int)Fx, (int)Fy));
+			}
+			else if(euclideanDistance(A, C) <= r){
+				return new CollisionResult(true, new Point((int)Gx, (int)Gy));
+			}
+			else{
+				//System.out.println("line 104");
+				return new CollisionResult(true, new Point((int)Fx, (int)Fy), new Point((int)Gx, (int)Gy));
+			}
+		}
+		else if(isVertical){
+			if(Math.abs(Bx - Cx) > r){
+				return new CollisionResult(false);
+			}
+			else if(Math.abs(Bx - Cx) == r){
+				return new CollisionResult(true, new Point((int)Bx, (int)Cy));
+			}
+			else if((euclideanDistance(B, C) <= r) && (euclideanDistance(A, C) <= r)){
+				return new CollisionResult(false);
+			}
+			else{
+				if(euclideanDistance(B, C) <= r){
+					int b = (int)Math.abs(Bx - Cx);
+					int a = (int)sqrt(sq(r) - sq(b));
+					if(Ay >= Cy){
+						return new CollisionResult(true, new Point((int)Bx, (int)(Cy + a)));
+					}
+					else{
+						return new CollisionResult(true, new Point((int)Bx, (int)(Cy - a)));
+					}
+				}
+				else if(euclideanDistance(A, C) <= r){
+					int b = (int)Math.abs(Bx - Cx);
+					int a = (int)sqrt(sq(r) - sq(b));
+					if(By >= Cy){
+						return new CollisionResult(true, new Point((int)Bx, (int)(Cy + a)));
+					}
+					else{
+						return new CollisionResult(true, new Point((int)Bx, (int)(Cy - a)));
+					}
+				}
+				else{
+					if(((Ay > Cy) && (By > Cy)) || ((Ay < Cy) && (By < Cy))){
+						return new CollisionResult(false);
+					}
+					else{
+						int b = (int)Math.abs(Bx - Cx);
+						int a = (int)sqrt(r - b);
+						return new CollisionResult(true, new Point((int)Bx, (int)(Cy + a)), new Point((int)Bx, (int)(Cy - a)));
+					}
+
+				}
+			}
+		}
+		else if(EClength == r){
+			return new CollisionResult(true, new Point((int)Ex, (int)Ey));
+		}
+		else{
+			return new CollisionResult(false);
+		}
+	}
+	private Point2D getLinesIntersection(Point start1, Point end1, Point start2, Point end2){
+
+		if((start2.getX() >= start1.getX()) && (start2.getX() <= end1.getX())){
+			if((start1.getY() >= start2.getY()) && (start1.getY() <= end2.getY())){
+				return new Point((int)start2.getX(), (int)start1.getY());
+			}
+			else if((start1.getY() <= start2.getY()) && (start1.getY() >= end2.getY())){
+				return new Point((int)start2.getX(), (int)start1.getY());
+			}
+			else{
+				//System.out.println("line 31");
+				return null;
+			}
+		}
+		else if((start2.getX() <= start1.getX()) && (start2.getX() >= end1.getX())){
+			if((start1.getY() >= start2.getY()) && (start1.getY() <= end2.getY())){
+				return new Point((int)start2.getX(), (int)start1.getY());
+			}
+			else if((start1.getY() <= start2.getY()) && (start1.getY() >= end2.getY())){
+				return new Point((int)start2.getX(), (int)start1.getY());
+			}
+			else{
+				//System.out.println("line 43");
+				return null;
+			}
+		}
+		else if((start1.getX() >= start2.getX()) && (start1.getX() <= end2.getX())){
+			if((start2.getY() >= start1.getY()) && (start2.getY() <= end1.getY())){
+				return new Point((int)start1.getX(), (int)start2.getY());
+			}
+			else if((start2.getY() <= start1.getY()) && (start2.getY() >= end1.getY())){
+				return new Point((int)start1.getX(), (int)start2.getY());
+			}
+			else{
+				//System.out.println("line 55");
+				return null;
+			}
+		}
+		else if((start1.getX() <= start2.getX()) && (start1.getX() >= end2.getX())){
+			if((start2.getY() >= start1.getY()) && (start2.getY() <= end1.getY())){
+				return new Point((int)start1.getX(), (int)start2.getY());
+			}
+			else if((start2.getY() <= start1.getY()) && (start2.getY() >= end1.getY())){
+				return new Point((int)start1.getX(), (int)start2.getY());
+			}
+			else{
+				//System.out.println("line 67");
+				return null;
+			}
+		}
+		else{
+			//System.out.println("line 72");
+			return null;
+		}
+
+	}
+
+	private boolean isInBetween(Point a, Point b, Point c){
+		int crossProduct = (int)(((c.getY() - a.getY()) * (b.getX() - a.getX()))
+				- ((c.getX() - a.getX()) * (b.getY() - a.getY())));
+		if(crossProduct != 0)
+			return false;
+
+		int dotProduct = (int)((c.getX() - a.getX()) * (b.getX() - a.getX())
+				+ (c.getY() - a.getY())*(b.getY() - a.getY()));
+		if(dotProduct < 0)
+			return false;
+
+		int squaredDistanceAB = (int)((b.getX() - a.getX())*(b.getX() - a.getX())
+				+ (b.getY() - a.getY())*(b.getY() - a.getY()));
+		if(dotProduct > squaredDistanceAB)
+			return false;
+
+		return true;
+	}
+
+	private class MyInt{
+		private int myInt;
+		public MyInt(int i){
+			myInt = i;
+		}
+
+		public void increment(){
+			myInt++;
+		}
+
+		public int getValue(){
+			return myInt;
+		}
+
+		@Override
+		public String toString(){
+			return String.valueOf(myInt);
+		}
+	}
+
+	public void print(){
+		if(solution==null)
+			System.out.println("null");
+		else{
+			System.out.print("Solution = {");
+			for(Vertex v: solution){
+				System.out.println(v.getCoordinate().toString());
+			}
+			System.out.println("}");
+		}
+	}
+
+}

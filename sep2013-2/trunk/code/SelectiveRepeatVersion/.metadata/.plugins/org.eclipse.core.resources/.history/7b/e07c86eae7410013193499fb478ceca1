@@ -1,0 +1,113 @@
+package robotSideCommsUnit;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import robotMotorSensorControl.RobotBehaviourControl;
+import lejos.nxt.Button;
+import lejos.nxt.LCD;
+import lejos.nxt.comm.Bluetooth;
+import lejos.nxt.comm.NXTConnection;
+
+/**
+ * This class provides the concrete methods responsible for establishing
+ * connection, canceling connection, receiving commands and sending messages.
+ * @fileName RobotCommunication
+ * @author Yu Hong
+ *
+ */
+
+public class RobotCommunication extends Thread{
+	private int rValue;
+	private int command;
+	private volatile int message;
+	private String ms;
+	private int tempCommand = -1;
+	private String connected = "Connected";
+	private String waiting = "Waiting...";
+	private String closing = "Closing...";
+	private NXTConnection connection;
+	private RobotBehaviourControl robotBehave;
+	private DataInputStream dis;
+	private DataOutputStream dos;
+	private volatile boolean finished;
+
+	public RobotCommunication(){
+		robotBehave = new RobotBehaviourControl(this);
+	}
+
+	/**
+	 * start the connection from the robot side when a connection 
+	 * request from the PC side arrives.
+	 */
+	public void waitingForConnection(){
+		LCD.drawString(waiting,0,0);
+		connection = Bluetooth.waitForConnection();
+		LCD.clear();
+		LCD.drawString(connected,0,0);
+		this.createStream();
+	}
+
+	/**
+	 * create the input and output stream for communication.
+	 */
+	public void createStream(){
+		dis = connection.openDataInputStream();
+		dos = connection.openDataOutputStream();
+	}
+
+	/**
+	 * receive the concrete commands which are represented as integers,
+	 *  and pass the commands to the RobotBehaviorControl class.
+	 */
+	public void run(){
+		finished = false;
+		while(!finished){
+			try {
+				while ((tempCommand = dis.readInt()) != -1){
+					command = tempCommand;
+					rValue = robotBehave.setCommand(tempCommand);
+					if (rValue != 0){
+						this.sendMessage(rValue);
+					}
+				}
+			}catch (IOException e) {
+				//input stream closed
+				finished = true;
+			}
+		}
+	}
+
+	/**
+	 * to send the message to the PC side.
+	 * @param m the message to be sent
+	 * @throws IOException
+	 */
+	public void sendMessage(int m) throws IOException{
+		this.message = m;
+		dos.writeInt(message);
+		dos.flush();
+		LCD.drawInt(message,1,3);
+	}
+
+	/**
+	 * the method used to cancel the connection
+	 * @throws IOException
+	 */
+	public void disconnection() throws IOException{
+		finished = true;
+		dis.close();
+		dos.close();
+		LCD.clear();
+		LCD.drawString(closing,0,0);
+		connection.close();
+		/*
+		while(!Button.ENTER.isDown()){
+
+		}
+		 */
+		LCD.clear();
+	}
+
+}

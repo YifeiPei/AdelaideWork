@@ -1,0 +1,713 @@
+/**
+ * SELECTIVE REPEAT COMMUNICATION FOR leJOS NXT
+ * by Matthew Nestor
+ *
+ * PACKET STRUCTURE INFORMATION
+ *
+ * { 0 0 0 0 _ 0 0 0 0 } { 0 0 0 0 _ 0 0 0 0 } { 0 0 0 0 _ 0 0 0 0 } { 0 0 0 0 _ 0 0 0 0 }
+ * {	   header	   } {				   payload				   } {		checksum	 }
+ * {{seq no.} {op-code}}
+ *
+ * - The packets are big-endian.
+ * - ACKS are performed by returning a packet with the sequence number of the packet to the acknowledged. There are no NACKS.
+ *   This is possible because each side can distinguish between ACKs and commands, because certain commands are only sent from one side
+ * - The 1st, 2nd, 3rd, and 4th bits represent the sequence number. Hence there is a maximum of 16 sequence numbers.
+ * - The 5th-to-8th bits represent the op-code. Hence there is a maximum of 16 op-codes.
+ */
+
+package hostSideCommsUnit;
+
+import controllerFSM.ControllerFSM;
+import mapDataStructure.Map;
+import mapDataStructure.UnexploredZone;
+
+import lejos.pc.comm.NXTConnector;
+import lejos.pc.comm.NXTCommException;
+
+import java.awt.Point;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
+
+/**
+ * @author Matthew Nestor
+ * @filename PCComms.java
+ * @package hostSideCommsUnit
+ * @project HostSide
+ * @date 01/11/2013
+ */
+
+public class PCComms extends Thread{
+
+	/*+++++++++++ OP-CODES +++++++++++*/
+	private static final byte DISCONNECT = 0x00;
+	private static final byte STOP = 0x01;
+	private static final byte FORWARD = 0x02;
+	private static final byte BACKWARD = 0x03;
+	private static final byte TURNLEFT = 0x04;
+	private static final byte TURNRIGHT = 0x05;
+	private static final byte ALIGNTOROAD = 0x06;
+	private static final byte GETBATTERYDATA = 0x07;
+	private static final byte GETROBOTLOCATION = 0x08;
+	private static final byte SETROBOTLOCATION = 0x09;
+	private static final byte SETROBOTORIENTATION = 0x0a;
+	private static final byte SETTRAVELSPEED = 0x0b;
+	private static final byte MARKROAD = 0x0c;
+	private static final byte FOLLOWLINE = 0x0d;
+	private static final byte TOUCHSENSORPRESSED = 0x0e;
+	private static final byte REACHEDVERTEX = 0x0f;
+
+	/*+++++++++++ SEQ-NUMS +++++++++++*/
+	private static final byte SE0 = 0x00;
+	private static final byte SE1 = 0x10;
+	private static final byte SE2 = 0x20;
+	private static final byte SE3 = 0x30;
+	private static final byte SE4 = 0x40;
+	private static final byte SE5 = 0x50;
+	private static final byte SE6 = 0x60;
+	private static final byte SE7 = 0x70;
+	private static final byte SE8 = (byte)0x80;
+	private static final byte SE9 = (byte)0x90;
+	private static final byte SE10 = (byte)0xa0;
+	private static final byte SE11 = (byte)0xb0;
+	private static final byte SE12 = (byte)0xc0;
+	private static final byte SE13 = (byte)0xd0;
+	private static final byte SE14 = (byte)0xe0;
+	private static final byte SE15 = (byte)0xf0;
+
+	/*+++++++++++ WINDOW FIELDS +++++++++++*/
+	private static final int WINDOWSIZE = 8;
+	private static final int SEQSPACE = 16;
+	private WindowElementOUT [] outBuffer;
+	private WindowElementIN [] inBuffer;
+	private int winFirstOUT, winLastOUT, winCountOUT, nextSeqNumOUT; 
+	private int winFirstIN, winCountIN, expectedSeqNum;
+
+	/*+++++++++++ STREAM FIELDS +++++++++++*/
+	private NXTConnector connector;
+	private DataInputStream dis;
+	private DataOutputStream dos;
+	private volatile boolean finished;
+
+	/*+++++++++++ MISC FIELDS +++++++++++*/
+	private ControllerFSM controllerFSM;
+	private Map map;
+	private ArrayList<UnexploredZone> unexploredZones;
+	private static final byte EMPTY = 0x00;
+	private static final long RTT = 200;
+	private Timer roundTripTimer;
+	private Timer getRobotData;
+	private Timer batteryTimer;
+	private long startTime;
+	private long endTime;
+	private long estimatedRTT;
+
+	public PCComms(ControllerFSM cfsm, Map m){
+		controllerFSM = cfsm;
+		map = m;
+		outBuffer = new WindowElementOUT[WINDOWSIZE];
+		inBuffer = new WindowElementIN[WINDOWSIZE];
+		roundTripTimer = new Timer();
+		nextSeqNumOUT = 0;
+		winFirstOUT = 0;
+		winLastOUT = -1;
+		winCountOUT = 0;
+		expectedSeqNum = 0;
+		winFirstIN = 0;
+		winCountIN = 0;
+		for(int i = 0; i < WINDOWSIZE; i++){
+			outBuffer[i] = new WindowElementOUT();
+			outBuffer[i].setACKED(false);
+			outBuffer[i].setEMPTY(true);
+		}
+		for(int i = 0; i < WINDOWSIZE; i++){
+			inBuffer[i] = new WindowElementIN();
+			inBuffer[i].setRECEIVED(false);
+		}
+	}
+	
+	public void setFSM(ControllerFSM fsm){
+		controllerFSM = fsm;
+	}
+	
+	public void setMap(Map m){
+		map = m;
+	}
+	
+	public void connectionFailure() throws InterruptedException{
+		controllerFSM.connectionFailure();
+	}
+	
+	public void updateRobotLocation(int x, int y){
+		Point p = new Point(x, y);
+		map.getRobot().setRobotLocation(p);
+	}
+	
+	private void initialiseRobotSideMap() throws Exception{
+		this.setRobotLocation(map.getRobot().getRobotLocation());
+		this.setRobotOrientation(map.getRobot().getRobotOrientation());
+	}
+
+	public boolean connect() throws Exception{
+		connector = new NXTConnector();
+		boolean connected = connector.connectTo("btspp://");
+		if (connected == false){
+			System.err.println("Failed to connect to any NXT");
+			return connected;
+		}
+		else{
+			System.err.println("Successfully connect to NXT");
+			dis = new DataInputStream(connector.getInputStream());
+			dos = new DataOutputStream(connector.getOutputStream());
+			this.start();
+			this.initialiseRobotSideMap();
+		}
+		return connected;
+	}
+
+	public boolean disconnect() throws Exception{
+		getRobotData.cancel();
+		getRobotData.purge();
+		batteryTimer.cancel();
+		batteryTimer.purge();
+		byte [] packet = new byte[4];
+		packet[0] = DISCONNECT;
+		packet[1] = EMPTY;
+		packet[2] = EMPTY;
+		return this.sendCommand(packet);
+	}
+
+	public boolean emergencyStop() throws Exception{
+		byte [] packet = new byte[4];
+		packet[0] = STOP;
+		packet[1] = EMPTY;
+		packet[2] = EMPTY;
+		return this.sendCommand(packet);
+	}
+
+	public boolean forward() throws Exception{
+		byte [] packet = new byte[4];
+		packet[0] = FORWARD;
+		packet[1] = EMPTY;
+		packet[2] = EMPTY;
+		return this.sendCommand(packet);
+	}
+
+	public boolean backward() throws Exception{
+		byte [] packet = new byte[4];
+		packet[0] = BACKWARD;
+		packet[1] = EMPTY;
+		packet[2] = EMPTY;
+		return this.sendCommand(packet);
+	}
+
+	public boolean turnLeft() throws Exception{
+		byte [] packet = new byte[4];
+		packet[0] = TURNLEFT;
+		packet[1] = EMPTY;
+		packet[2] = EMPTY;
+		return this.sendCommand(packet);
+	}
+
+	public boolean turnRight() throws Exception{
+		byte [] packet = new byte[4];
+		packet[0] = TURNRIGHT;
+		packet[1] = EMPTY;
+		packet[2] = EMPTY;
+		return this.sendCommand(packet);
+	}
+
+	public boolean alignToRoad() throws Exception{
+		byte [] packet = new byte[4];
+		packet[0] = ALIGNTOROAD;
+		packet[1] = EMPTY;
+		packet[2] = EMPTY;
+		return this.sendCommand(packet);
+	}
+
+	public boolean getBatteryData() throws Exception{
+		byte [] packet = new byte[4];
+		packet[0] = GETBATTERYDATA;
+		packet[1] = EMPTY;
+		packet[2] = EMPTY;
+		return this.sendCommand(packet);
+	}
+
+	public boolean getRobotLocation() throws Exception{
+		byte [] packet = new byte[4];
+		packet[0] = GETROBOTLOCATION;
+		packet[1] = EMPTY;
+		packet[2] = EMPTY;
+		return this.sendCommand(packet);
+	}
+
+	public boolean setRobotLocation(Point p) throws Exception{
+		byte [] packet = new byte[4];
+		packet[0] = SETROBOTLOCATION;
+		packet[1] = this.intToByte((int)p.getX());
+		packet[2] = this.intToByte((int)p.getY());
+		return this.sendCommand(packet);
+	}
+
+	public boolean setRobotOrientation(int orientation) throws Exception{
+		byte [] packet = new byte[4];
+		packet[0] = SETROBOTORIENTATION;
+		packet[1] = EMPTY;
+		packet[2] = this.intToByte(orientation);
+		return this.sendCommand(packet);
+	}
+
+	public boolean setTravelSpeed(int speed) throws Exception{
+		byte [] packet = new byte[4];
+		packet[0] = SETTRAVELSPEED;
+		packet[1] = EMPTY;
+		packet[2] = this.intToByte(speed);
+		return this.sendCommand(packet);
+	}
+
+	public boolean markRoadClosure() throws Exception{
+		byte [] packet = new byte[4];
+		packet[0] = MARKROAD;
+		packet[1] = EMPTY;
+		packet[2] = EMPTY;
+		return this.sendCommand(packet);
+	}
+
+	public boolean followLine(int distance) throws Exception{
+		byte [] packet = new byte[4];
+		packet[0] = FOLLOWLINE;
+		packet[1] = EMPTY;
+		packet[2] = this.intToByte(distance);
+		return this.sendCommand(packet);
+	}
+
+	public void run(){
+		getRobotData = new Timer("getRobotData");
+		batteryTimer = new Timer("batteryTimer");
+		getRobotData.schedule(new RobotLocationTask(), 0, 300);
+		batteryTimer.schedule(new BatteryInfoTask(), 0, 30*1000);
+		finished = false;
+		int input;
+		while (!finished){
+			try {
+				messageHandler(dis.readInt());
+			} catch (EOFException e) {
+				break; //exit normally
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private void messageHandler(int m) throws Exception{
+		endTime = System.nanoTime();
+		estimatedRTT = endTime - startTime;
+		System.out.println("    Received data: "+m);
+		System.out.println("    RTT = "+estimatedRTT/1000000);
+		byte [] packet = intToByteArray(m);
+		byte opcode = (byte)(packet[0] & 0x0f);
+		if(opcode == TOUCHSENSORPRESSED || opcode == REACHEDVERTEX){
+			this.commandHandler(packet);
+		}else{
+			this.ackHandler(packet);
+		}
+	}
+
+	private void commandHandler(byte [] packet) throws Exception{
+		int acceptableRange = (expectedSeqNum + WINDOWSIZE - 1) % SEQSPACE;
+		int seqNum = this.getSeqNum(packet[0]);
+
+		if( (!packetIsCorrupt(packet)) && (seqNum >= expectedSeqNum || seqNum <  acceptableRange) ){
+			//packet is not corrupted and in order
+			inBuffer[(((seqNum - expectedSeqNum) % SEQSPACE) + winFirstIN) % WINDOWSIZE].setPacket(packet);
+			inBuffer[(((seqNum - expectedSeqNum) % SEQSPACE) + winFirstIN) % WINDOWSIZE].setRECEIVED(true);
+			winCountIN = (winCountIN + 1) % WINDOWSIZE;
+
+			while(inBuffer[winFirstIN].isRECEIVED()){
+				inBuffer[winFirstIN].setRECEIVED(false);
+				executeCommand(inBuffer[winFirstIN].getPacket());
+				winFirstIN = (winFirstIN + 1) % WINDOWSIZE;
+				expectedSeqNum = (expectedSeqNum + 1) % SEQSPACE;    
+			}
+			
+		}else if(!packetIsCorrupt(packet)){
+			//packet is not corrupted but already received; previous ACK has been lost; send duplicate ACK
+		}else{
+			//packet is corrupt; do nothing; wait for timeout to resend
+			return;
+		}
+		
+		this.sendACK(packet);
+	}
+
+	private void executeCommand(byte [] packet){
+		if(getOpCode(packet[0]) == TOUCHSENSORPRESSED){
+			System.out.println("Touch sensor pressed!");
+		}else if(getOpCode(packet[0]) == REACHEDVERTEX){
+			System.out.println("Reached vertex!");
+		}
+	}
+	
+	private void updateSystem(byte [] packet) throws InterruptedException{
+		byte opcode = this.getOpCode(packet[0]);
+		if(opcode == DISCONNECT){
+			System.out.println("Disconnecting...");
+			this.confirmedDisconnect();
+		}else if(opcode == GETBATTERYDATA){
+			int batteryValue = this.byteToInt(packet[2]);
+			System.out.println("Battery value = "+batteryValue);
+		}else if(opcode == GETROBOTLOCATION){
+			int x = this.byteToInt(packet[1]);
+			int y = this.byteToInt(packet[2]);
+			System.out.println("Robot location = ("+x+", "+y+")");
+		}
+	}
+
+	private void ackHandler(byte [] packet) throws Exception{
+		boolean theWindowSlid = false;
+		int ackNum = getSeqNum(packet[0]);
+
+		if(!packetIsCorrupt(packet)){
+			//packet is intact
+			if(winCountOUT != 0){
+				//we are expecting an ACK
+				int seqFirst = outBuffer[winFirstOUT].getSeqNum();
+				int seqLast = outBuffer[winLastOUT].getSeqNum();
+				if(	((seqFirst <= seqLast) && (ackNum >= seqFirst && ackNum <= seqLast)) ||
+						((seqFirst > seqLast) && (ackNum >= seqFirst || ackNum <= seqLast))){
+					//it's a new ACK
+					System.out.println("Received new ACK");
+					System.out.println("Robot successfully received command "+this.getOpCode(packet[0]));
+					
+					this.updateSystem(packet);
+
+					//register ACK
+					for(int i = 0; i < WINDOWSIZE; i++){
+						if(outBuffer[i].getSeqNum() == ackNum){
+							outBuffer[i].setACKED(true);
+							break;
+						}
+					}
+
+					//if the ACK is in the lowest part of the window, stop the timer
+					if(outBuffer[winFirstOUT].isACKED()){
+						roundTripTimer.cancel();
+						roundTripTimer.purge();
+					}
+
+					//slide the window up
+					while(outBuffer[winFirstOUT].isACKED()){
+						theWindowSlid = true;
+						outBuffer[winFirstOUT].setACKED(false);
+						outBuffer[winFirstOUT].setEMPTY(true);
+						winFirstOUT = (winFirstOUT + 1) % WINDOWSIZE;
+						winCountOUT--; //decrement the number of packets in the window
+					}
+
+					//if the window slid, restart the timer
+					if(theWindowSlid && winCountOUT > 0){
+						roundTripTimer = new Timer("RTTTimer");
+						roundTripTimer.schedule(new RTTTask(), RTT);
+					}	
+				}else{
+					System.out.println("Received duplicate ACK!");
+				}
+			}
+		}else{
+			System.out.println("Received corrupted packet!");
+		}
+	}
+
+	public void sendACK(byte [] packet) throws IOException{
+		int ack = this.byteArrayToInt(packet);
+		dos.writeInt(ack);
+		dos.flush();
+	}
+
+	public boolean sendCommand(byte [] packet) throws Exception{
+		if(winCountOUT < WINDOWSIZE){
+			//start timer to estimate RTT
+			startTime = System.nanoTime();
+			
+			//make packet
+			int command = this.makePacket(nextSeqNumOUT, packet);
+
+			//add packet to window
+			winLastOUT = (winLastOUT + 1) % WINDOWSIZE;
+			outBuffer[winLastOUT].setPacket(command);
+			outBuffer[winLastOUT].setSeqNum(nextSeqNumOUT);
+			outBuffer[winLastOUT].setEMPTY(false);
+			outBuffer[winLastOUT].setACKED(false);
+
+			//increment values
+			winCountOUT++;
+			nextSeqNumOUT = (nextSeqNumOUT + 1) % SEQSPACE;
+
+			//send message!
+			dos.writeInt(command);
+			dos.flush();
+
+			//set timer if first item in window
+			if(winCountOUT == 1){
+				roundTripTimer = new Timer("RTTimer");
+				roundTripTimer.schedule(new RTTTask(), RTT);
+			}
+			return true;
+		}else{
+			System.out.println("Window full. Dropping packet...");
+			return false;
+		}
+	}
+
+	private void confirmedDisconnect() throws InterruptedException{
+		try {
+			dis.close();
+			finished = true;
+			this.join();
+			dos.close();
+			connector.close();
+
+		} catch (IOException ioe) {
+			System.err.println(Thread.currentThread().getName()+": IOException closing connection:");
+			ioe.printStackTrace();
+		}
+	}
+
+	public byte computeChecksum(byte [] byteArray){
+		int checksum = 0;
+		for(int i = 0; i < byteArray.length - 1; i++){
+			byte value = byteArray[i];
+			for(int j = 0; j < 8; j++){
+				checksum = checksum + (value & 0x01);
+				value = (byte)(value >> 1);
+			}
+		}
+		return this.intToByte(checksum);
+	}
+
+	public boolean packetIsCorrupt(byte [] packet){
+		byte checksum = computeChecksum(packet);
+		return (checksum != packet[3]);
+	}
+
+	private int makePacket(int seqNum, byte [] packet) throws Exception{
+		packet[0] = (byte)(this.transformSeqNum(seqNum) | packet[0]);
+		byte checksum = computeChecksum(packet);
+		packet[3] = checksum;
+		return byteArrayToInt(packet);
+	}
+
+	private int byteArrayToInt(byte[] b) 
+	{
+		return (int)((b[0] & 0xFF) << 24 |
+				(b[1] & 0xFF) << 16 |
+				(b[2] & 0xFF) << 8  |
+				(b[3] & 0xFF));
+	}
+
+	private byte[] intToByteArray(int array)
+	{
+		return new byte[] {
+				(byte) ((array >> 24) & 0xFF),
+				(byte) ((array >> 16) & 0xFF),   
+				(byte) ((array >> 8) & 0xFF),   
+				(byte) (array & 0xFF)
+		};
+	}
+
+	private int byteToInt(byte b){
+		return (int)(b & 0xff);
+	}
+
+	private byte intToByte(int i){
+		return (byte)i;
+	}
+
+	private byte transformSeqNum(int sequenceNumber) throws Exception{
+		switch(sequenceNumber){
+		case 0:
+			return SE0;
+		case 1:
+			return SE1;
+		case 2:
+			return SE2;
+		case 3:
+			return SE3;
+		case 4:
+			return SE4;
+		case 5:
+			return SE5;
+		case 6:
+			return SE6;
+		case 7:
+			return SE7;
+		case 8:
+			return SE8;
+		case 9:
+			return SE9;
+		case 10:
+			return SE10;
+		case 11:
+			return SE11;
+		case 12:
+			return SE12;
+		case 13:
+			return SE13;
+		case 14:
+			return SE14;
+		case 15:
+			return SE15;
+		}
+
+		throw new Exception("Invalid sequence number");
+	}
+
+	private int getSeqNum(byte sequenceNumber) throws Exception{
+		if((sequenceNumber & 0xf0) == SE0)
+			return 0;
+		else if((sequenceNumber & 0xf0) == SE1)
+			return 1;
+		else if((sequenceNumber & 0xf0) == SE2)
+			return 2;
+		else if((sequenceNumber & 0xf0) == SE3)
+			return 3;
+		else if((sequenceNumber & 0xf0) == SE4)
+			return 4;
+		else if((sequenceNumber & 0xf0) == SE5)
+			return 5;
+		else if((sequenceNumber & 0xf0) == SE6)
+			return 6;
+		else if((sequenceNumber & 0xf0) == SE7)
+			return 7;
+		else if((byte)(sequenceNumber & 0xf0) == SE8)
+			return 8;
+		else if((byte)(sequenceNumber & 0xf0) == SE9)
+			return 9;
+		else if((byte)(sequenceNumber & 0xf0) == SE10)
+			return 10;
+		else if((byte)(sequenceNumber & 0xf0) == SE11)
+			return 11;
+		else if((byte)(sequenceNumber & 0xf0) == SE12)
+			return 12;
+		else if((byte)(sequenceNumber & 0xf0) == SE13)
+			return 13;
+		else if((byte)(sequenceNumber & 0xf0) == SE14)
+			return 14;
+		else if((byte)(sequenceNumber & 0xf0) == SE15)
+			return 15;
+
+		throw new Exception("Invalid sequence number");
+	}
+
+	private byte getOpCode(byte b){
+		return (byte)(b & 0x0f);
+	}
+
+	private class RTTTask extends TimerTask{
+		public void run(){
+			System.out.println("RTT Timer expired");
+			//send message!
+			try {
+				dos.writeInt(outBuffer[winFirstOUT].getPacket());
+				dos.flush();
+				System.out.println("Resending first packet");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			roundTripTimer = new Timer("RTTTimer");
+			roundTripTimer.schedule(new RTTTask(), RTT);
+			System.out.println("Reset RTT Timer");
+		}
+	}
+
+	private class WindowElementOUT{
+		int packet;
+		int seqNum;
+		boolean isACKED;
+		boolean isEMPTY;
+
+		public void setSeqNum(int i){
+			seqNum = i;
+		}
+
+		public int getSeqNum(){
+			return seqNum;
+		}
+
+		public void setPacket(int i){
+			packet = i;
+		}
+
+		public int getPacket(){
+			return packet;
+		}
+
+		public void setACKED(boolean b){
+			isACKED = b;
+		}
+
+		public boolean isACKED(){
+			return isACKED;
+		}
+
+		public void setEMPTY(boolean b){
+			isEMPTY = b;
+		}
+
+		public boolean isEMPTY(){
+			return isEMPTY;
+		}
+	}
+
+	private class WindowElementIN{
+		byte [] packet;
+		boolean isRECEIVED;
+
+		public void setPacket(byte [] p){
+			packet = p;
+		}
+
+		public byte [] getPacket(){
+			return packet;
+		}
+
+		public void setRECEIVED(boolean b){
+			isRECEIVED = b;
+		}
+
+		public boolean isRECEIVED(){
+			return isRECEIVED;
+		}
+	}
+	
+	private class RobotLocationTask extends TimerTask{
+		public void run() {
+			try {
+				PCComms.this.getRobotLocation();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+	/**
+	 *	to send the battery level request to the robot 
+	 *	according to the timer
+	 *
+	 */
+	private class BatteryInfoTask extends TimerTask{
+		public void run() {
+			try {
+				PCComms.this.getBatteryData();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}	
+	}
+}

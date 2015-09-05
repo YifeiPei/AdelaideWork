@@ -1,0 +1,383 @@
+package robotMotorSensorControl;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import robotSideCommsUnit.RobotCommunication;
+import lejos.nxt.Battery;
+import lejos.nxt.Button;
+import lejos.nxt.LCD;
+import lejos.nxt.Motor;
+import lejos.nxt.SensorPort;
+import lejos.nxt.UltrasonicSensor;
+import lejos.robotics.localization.OdometryPoseProvider;
+import lejos.robotics.navigation.DifferentialPilot;
+import lejos.robotics.navigation.Pose;
+import lejos.robotics.subsumption.Behavior;
+import lejos.util.Delay;
+import lejos.util.Timer;
+import lejos.util.TimerListener;
+import lejos.nxt.comm.RConsole;
+
+/**
+ * the class contains the methods to control the robot to do 
+ * some certain tasks according to the commands received.
+ * @fileName RobotBehaviorControl
+ * @author Yu Hong & Matthew Nestor
+ *
+ */
+
+public class RobotBehaviourControl{
+	/*+++++++++++ OP-CODES +++++++++++*/
+	private static final byte DISCONNECT = 0x00;
+	private static final byte STOP = 0x01;
+	private static final byte FORWARD = 0x02;
+	private static final byte BACKWARD = 0x03;
+	private static final byte TURNLEFT = 0x04;
+	private static final byte TURNRIGHT = 0x05;
+	private static final byte ALIGNTOROAD = 0x06;
+	private static final byte GETBATTERYDATA = 0x07;
+	private static final byte GETROBOTLOCATION = 0x08;
+	private static final byte SETROBOTLOCATION = 0x09;
+	private static final byte SETROBOTORIENTATION = 0x0a;
+	private static final byte SETTRAVELSPEED = 0x0b;
+	private static final byte MARKROAD = 0x0c;
+	private static final byte FOLLOWLINE = 0x0d;
+	
+	private RobotCommunication robotComms;
+	private DifferentialPilot pilot;
+	private LineFollower lineFollower;
+	private RobotStatusMonitor statusMonitor;
+	private volatile int command;
+	private SensorInfo sensor;
+	private UltrasonicSensor range;
+	private int lightValue;
+	private int distance;
+	private int tachoA;
+	private int tachoB;
+	private int speed;
+	private int travelAngle;
+	private OdometryPoseProvider odoPose;
+	private Pose pose;
+	private static final int FOUNDVERTEX = 1;
+
+	/**
+	 * the constructor of the class
+	 */
+	public RobotBehaviourControl(RobotCommunication rb){
+		speed = 3;
+		pilot = new DifferentialPilot(5.6, 13.4, Motor.A, Motor.B);  // parameters in cm
+		pilot.setTravelSpeed(speed);
+		pilot.setRotateSpeed(30);
+		sensor = new SensorInfo();
+		robotComms = rb;
+		range = new UltrasonicSensor(SensorPort.S4);
+		odoPose = new OdometryPoseProvider(pilot);
+		statusMonitor = new RobotStatusMonitor(pilot);
+		pose = new Pose();
+	}
+
+	public void executeCommand(byte [] packet) throws IOException{
+		if(getOpCode(packet[0]) == DISCONNECT){
+			LCD.clear();
+			LCD.drawString("Disconnecting...", 0, 0);
+			robotComms.disconnection();
+		}else if(getOpCode(packet[0]) == STOP){
+			LCD.clear();
+			LCD.drawString("Stop", 0, 0);
+			pilot.stop();
+			if(lineFollower != null){
+				if(lineFollower.isAlive()){
+					lineFollower.terminate();
+					try {
+						lineFollower.join();
+					} catch (InterruptedException e) {
+						//e.printStackTrace();
+						LCD.clear();
+						LCD.drawString("Exception: 91\n"+e.getMessage(), 0, 0);
+						Button.waitForAnyPress();
+					}
+				}
+			}
+			pilot.stop();
+		}else if(getOpCode(packet[0]) == FORWARD){
+			LCD.clear();
+			LCD.drawString("Forward", 0, 0);
+			pilot.forward();
+		}else if(getOpCode(packet[0]) == BACKWARD){
+			LCD.clear();
+			LCD.drawString("Backward", 0, 0);
+			pilot.backward();
+		}else if(getOpCode(packet[0]) == TURNLEFT){
+			LCD.clear();
+			LCD.drawString("Turn Left", 0, 0);
+			pilot.rotate(90);
+		}else if(getOpCode(packet[0]) == TURNRIGHT){
+			LCD.clear();
+			LCD.drawString("Turn right", 0, 0);
+			pilot.rotate(-90);
+		}else if(getOpCode(packet[0]) == ALIGNTOROAD){
+			LCD.clear();
+			LCD.drawString("Aligning", 0, 0);
+			pilot.rotate(5);
+			pilot.travel(20);
+		}else if(getOpCode(packet[0]) == SETROBOTLOCATION){
+			LCD.clear();
+			LCD.drawString("SetRoboLoc", 0, 0);
+			LCD.drawString("x = "+String.valueOf(this.byteToInt(packet[1])), 0, 1);
+			LCD.drawString("y = "+String.valueOf(this.byteToInt(packet[2])), 0, 2);
+			pose.setLocation(this.byteToInt(packet[1]), this.byteToInt(packet[2]));
+			odoPose.setPose(pose);
+		}else if(getOpCode(packet[0]) == SETROBOTORIENTATION){
+			LCD.clear();
+			LCD.drawString("SetRoboOr", 0, 0);
+			LCD.drawString("Angle = "+String.valueOf(this.byteToInt(packet[2])), 0, 1);
+			pose.setHeading(this.byteToInt(packet[2]));
+			odoPose.setPose(pose);
+		}else if(getOpCode(packet[0]) == SETTRAVELSPEED){
+			LCD.clear();
+			LCD.drawString("TravSpeed", 0, 0);
+			LCD.drawString("Speed = "+String.valueOf(this.byteToInt(packet[2])), 0, 1);
+			pilot.setTravelSpeed(this.byteToInt(packet[2]));
+		}else if(getOpCode(packet[0]) == MARKROAD){
+			LCD.clear();
+			LCD.drawString("Mark", 0, 0);
+			pilot.stop();
+			pilot.rotate(180);
+			pilot.travel(5);
+			Delay.msDelay(100);
+			Motor.C.setSpeed(30);
+			Motor.C.rotate(-35);
+			pilot.rotate(5);
+			pilot.rotate(-10);
+			pilot.rotate(5);
+			Motor.C.rotate(35);
+			pilot.travel(-5);
+			pilot.rotate(-180);
+		}else if(getOpCode(packet[0]) == FOLLOWLINE){
+			LCD.clear();
+			LCD.drawString("Follow", 0, 0);
+			lineFollower = new LineFollower(pilot, statusMonitor, robotComms);
+			lineFollower.setDistance(this.byteToInt(packet[2]));
+			lineFollower.start();
+		}
+	}
+	
+	public byte [] getData(byte [] packet){
+		if(getOpCode(packet[0]) == GETBATTERYDATA){
+			LCD.clear();
+			LCD.drawString("Battery", 0, 0);
+			double batteryVoltage =Battery.getVoltageMilliVolt();
+			double batteryLevel = (batteryVoltage - 7000)/1400.0;
+			batteryLevel = batteryLevel*100;
+			int battery = (int)batteryLevel + 200;
+			packet[2] = this.intToByte(battery);
+		}else if(getOpCode(packet[0]) == GETROBOTLOCATION){
+			LCD.clear();
+			LCD.drawString("GetRoboLoc", 0, 0);
+			packet[1] = 5;
+			packet[2] = 10;
+		}
+		return packet;
+	}
+	
+	private byte getOpCode(byte b){
+		return (byte)(b & 0x0f);
+	}
+	
+	private int byteToInt(byte b){
+		return (int)(b & 0xff);
+	}
+	
+	private byte intToByte(int i){
+		return (byte)i;
+	}
+	
+	/**
+	 * to set the current command and store it to the arraylist
+	 * @param c the concrete command represented as integer
+	 * @return the result value
+	 * @throws IOException
+	 */
+	public int setCommand(int c){
+		command = c;
+		return this.doCommand();
+	}
+
+	/**
+	 * to get the current speed
+	 * @return speed
+	 */
+	public int getSpeed(){
+		return speed;
+	}
+
+	/**
+	 * the method would control the robot to perform certain tasks
+	 * according to the command received.
+	 * @return the result value
+	 * @throws IOException
+	 */
+	public int doCommand() {
+		if (command == -2){
+			try {
+				robotComms.disconnection();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+				LCD.clear();
+				LCD.drawString("Exception: 97\n"+e.getMessage(), 0, 0);
+				while(!Button.ENTER.isDown()){}
+				System.exit(1);
+			}
+		}
+		if (command == 0){
+			pilot.stop();
+			if(lineFollower != null){
+				if(lineFollower.isAlive()){
+					lineFollower.terminate();
+					try {
+						lineFollower.join();
+					} catch (InterruptedException e) {
+						//e.printStackTrace();
+						LCD.clear();
+						LCD.drawString("Exception: 113\n"+e.getMessage(), 0, 0);
+						while(!Button.ENTER.isDown()){}
+						System.exit(1);
+					}
+				}
+			}
+			pilot.stop();
+		}
+		if (command == 1){
+			pilot.forward();
+			//LCD.clear();
+			//LCD.drawString("FORWARD!", 0, 1);
+		}
+		if (command == 2){
+			pilot.backward();
+			//LCD.clear();
+			//LCD.drawString("BACKWARD!", 0, 1);
+		}
+		if (command == 3){
+			pilot.rotate(90);
+		}
+		if (command == 4){
+			pilot.rotate(-90);
+		}
+
+		if(command == 5){
+			pilot.rotate(5);
+			pilot.travel(20);
+		}
+
+		if (command == 11){
+			double batteryVoltage =Battery.getVoltageMilliVolt();
+			double batteryLevel = (batteryVoltage - 7000)/1400.0;
+			batteryLevel = batteryLevel*100;
+			int battery = (int)batteryLevel + 200;
+			return battery;
+		}
+		if (command == 12){
+			lightValue = sensor.getLightValue()+100;
+			LCD.drawString("light = "+String.valueOf(lightValue-100), 0, 5);
+			return lightValue;
+		}
+		if (command == 13){
+			tachoA = Motor.A.getTachoCount();
+			//		Motor.A.resetTachoCount();
+			LCD.drawInt(tachoA,2,4);
+			if (tachoA >= 0){
+				tachoA = tachoA+1000;
+				return tachoA;
+			}
+			if (tachoA < 0){
+				tachoA = tachoA-1000;
+				return tachoA;
+			}
+		}
+		if (command == 15){
+			distance = range.getDistance();
+			distance = distance + 300;
+			return distance;
+		}
+		if (command == 17){
+			statusMonitor.makeTravelReading();
+			int incrementDistance = statusMonitor.getIncrementDistanceTravelled();
+			return incrementDistance + 20000;
+		}
+		if(command == 18){
+			try {
+				robotComms.sendMessage(FOUNDVERTEX);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				LCD.clear();
+				LCD.drawString("Exception: 200\n"+e.getMessage(), 0, 0);
+				while(!Button.ENTER.isDown()){}
+				System.exit(1);
+			}
+		}
+
+
+		//		if (command == 17){
+		//	//		OdometryPoseProvider odoPose = new OdometryPoseProvider(pilot);
+		//	//		Pose pose = odoPose.getPose();
+		//			int x = (int)pose.getX();
+		//			int y = (int)pose.getY();
+		//			LCD.drawInt(x, 6, 1);
+		//			
+		//			return y+20000;
+		//		}
+
+		if (command == 20){
+			pilot.rotate(180);
+			pilot.travel(5);
+			Delay.msDelay(100);
+			Motor.C.setSpeed(30);
+			Motor.C.rotate(-35);
+			pilot.rotate(5);
+			pilot.rotate(-10);
+			pilot.rotate(5);
+			Motor.C.rotate(35);
+			pilot.travel(-5);
+			pilot.rotate(-180);
+		}
+
+		if (command >=150 && command <=165){
+			speed = command - 150;
+			pilot.setTravelSpeed(speed);
+		}
+
+		if(command >= 21 && command <= 149){
+			//follow line to the next vertex
+			lineFollower = new LineFollower(pilot, statusMonitor, robotComms);
+			lineFollower.setDistance(command - 21);
+			lineFollower.start();
+			/*
+			try {
+				lineFollower.join();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+
+			}
+			 */
+
+		}
+		
+		if(command >= 200 && command < 400){
+			pose.setLocation(command - 200, pose.getY());
+		}
+		
+		if(command >= 400 && command < 600){
+			pose.setLocation(pose.getX(), command - 400);
+		}
+		
+		if(command >= 600 && command < 960){
+			pose.setHeading(command - 600);
+		}
+
+		return 0;
+	}
+
+}

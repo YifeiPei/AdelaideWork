@@ -1,0 +1,33 @@
+\documentclass[11pt]{article}
+\usepackage{tabularx}
+\usepackage[stretch=10]{microtype} % Slightly tweak font spacing for aesthetics
+
+\setlength\parindent{0pt} % remove all indentation from paragraphs
+\title{Simple \LaTeX memo template. \\
+\author{Yifei} \\
+}
+\begin{document}
+    
+\textbf{Group Memo} \\
+
+\begin{tabularx}\linewidth{ll} \\
+\textbf{To} & Group 2 \\
+\textbf{From:} & Yifei \\
+\textbf{Memo:} & 001 \\
+\textbf{Date:} & \today \\
+\textbf{Subject:} & \emph{\LaTeX} memo template. \\
+\end{tabularx} \\
+
+\rule{400pt}{1pt} \\
+
+Here is a \emph{\LaTeX} template for group memos. \\
+
+I think it a good idea to give each memo a number and include the subject in the title. For example this memo could be named ``Memo 001 - simple Latex memo template". \\
+
+Once you make a memo and upload it to SVN, please tell everyone the existence of the memo (perhaps email with the pdf attached or Wahtsapp or massage). 
+
+\paragraph{\small Comment Yifei \today}  A comment on the memo could be inserted like this by any group member. In this way a conversation can be documented.
+
+\paragraph{\small Comment Yifei \today} Another comment like this!
+
+\end{document}

@@ -1,0 +1,75 @@
+% Group: 	2
+% Name: 	Coding Pharaohs
+% Document: 	Minutes of the 8th client meeting
+% Author:	Bowen Tao
+% Date: Monday 14 October 2013
+
+\documentclass[12pt, a4paper]{article}
+\topmargin -1cm
+\title{Minutes of the 8th Client Meeting}
+\author{\textsc{Coding Pharaohs} (Group 2)}
+\date{October 14, 2013}
+
+\begin{document}
+\maketitle
+
+\begin{tabbing}
+\textbf{Chair}~~~~~~~~\=Abdulaziz Alhulayfi           \\
+\textbf{Secretary}    \>Bowen Tao     \\
+\textbf{Members}      \>Yifei Pei  \\
+                      \>Yu Hong           \\
+                      \>Jianqiu Li           \\
+                      \>Metthew Nestor            \\
+\textbf{Apologies}    \>None                \\
+\end{tabbing}
+
+\section{Time and Place}
+
+The 8th client meeting for Software Engineering and Project was held in \textbf{Ingkarni
+Wardli, Room 462 \textnormal{at} 2:30pm \textnormal{on} Monday 14 October 2013}.
+
+\section{Quorum Announcement}
+
+Having established that all members were present, the meeting was declared open.
+
+\section{Summary of Previous Presentation}
+
+Mr.~Yu Hong presented the Testing Techniques, which is structured by three parts, Test Planning, Test Implementation and Test Results. Mr ~Yu Hong presented the big picture of the test planning in terms of Gantt Chart. And actually it is divided by two components, Implementation and Unit Testing and Integration and System Testing. They will carry out from Mid-break first week till week 12 and week 9 till week 12 respectively. He also demonstrated there are two phases in terms of Test Implementation, Informal Testing and Formal Testing. The former one consists of Hardware Testing in terms of robot prototype and robot functioning and Software Testing in terms of tests when coding while the latter one is made up of waterfall model and junit testing. The client was overall happy with the presentation.
+
+
+\section{Group Milestone:Synchronisation of the robot movement on GUI}
+
+\subsection{Overview}
+
+Mr.~Yu Hong showed the first milestone for week 10 and that is synchronisation of the robot movement on GUI to the client.
+
+\subsection{Detailed Presentation}
+
+The demonstration showed that there is a mark in the screen, which represents the robot virtually and after robot moves physically, the virtual robot in the screen will move accordingly.
+
+\section{Group Milestone: Map and GUI redesign}
+
+\subsection{Overview}
+
+Mr.~Yu Hong showed the new design of the map to the client.
+
+\subsection{Detailed Presentation}
+
+The demonstration showed the new starting point. Before this week the starting point is in the top-left corner and now it transferred into the low-left corner. Also, the obstacles, closure and unexplored area redesign against the former version.  
+
+\section{Group Milestone: Basic AI movement}
+
+\subsection{Overview}
+
+Mr.~Matthew Nestor presented basic AI movement.
+
+\subsection{Detailed Presentation}
+
+Mr.~Matthew Nestor showed the client that the robot can follow the line to forward and detect the intersection so that the robot can take turns by its detection.
+
+
+\section{Adjournment}
+The next meeting is a group meeting to be held in Ingkarni Wardli, Room 462 at 2pm on Thursday 17 October 2013, and the next client meeting will be held at the same place at 2.30pm Monday 21 October 2013.\\
+\\
+The meeting closed at 3:05pm.
+\end{document}

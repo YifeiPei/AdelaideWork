@@ -1,0 +1,112 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+    Document Type Definition for Road Closure Marking Robot
+    Christopher Johnson - SEP 2013, Semester 2
+-->
+<!DOCTYPE closure-map [
+  <!ELEMENT closure-map (attribute*, boundary, robot-status, zone*, structures)>
+  <!ATTLIST closure-map units (metres|feet|yards|km|miles|cm|mm) "metres">
+
+  <!ELEMENT boundary (rect)>
+  
+  <!ELEMENT robot-status (attribute*, point)>
+
+  <!ELEMENT zone (attribute*, area)>
+  <!ATTLIST zone state (disaster|unexplored|explored) "unexplored">
+
+  <!ELEMENT area (rect|circle)+>
+
+  <!ELEMENT structures (road*, intersection*, obstacle*, closure*)>
+
+  <!ELEMENT road (point*|line)>
+
+  <!ELEMENT intersection (point)>
+
+  <!ELEMENT obstacle (point|line|rect)>
+
+  <!ELEMENT closure (attribute*, point)>
+
+  <!ELEMENT line EMPTY>
+  <!ATTLIST line
+      x1 CDATA #REQUIRED
+      y1 CDATA #REQUIRED
+      x2 CDATA #REQUIRED
+      y2 CDATA #REQUIRED>
+
+  <!ELEMENT circle EMPTY>
+  <!ATTLIST circle
+      x CDATA #REQUIRED
+      y CDATA #REQUIRED
+      radius CDATA #REQUIRED>
+
+  <!ELEMENT point EMPTY>
+  <!ATTLIST point 
+      x CDATA #REQUIRED
+      y CDATA #REQUIRED>
+
+  <!ELEMENT rect EMPTY>
+  <!ATTLIST rect 
+      x CDATA #REQUIRED
+      y CDATA #REQUIRED
+      width CDATA #REQUIRED
+      height CDATA #REQUIRED>
+  
+  <!-- General Attributes definition -->
+  <!ELEMENT attribute (key,value)>
+  <!ELEMENT key (#PCDATA)>
+  <!ELEMENT value (#PCDATA)>
+]>
+
+<closure-map units="metres">
+    <attribute>
+        <key>Creation Date</key>
+        <value>01/01/2013</value>
+    </attribute>
+
+    <boundary>
+        <rect x="0" y="0" width="240" height="180"/>
+    </boundary>
+    
+    <robot-status>
+        <attribute>
+            <key>facing</key>
+            <value>90</value>
+        </attribute>
+        <point x="120" y="0" />
+    </robot-status>
+
+    <zone state="unexplored">
+        <area>
+            <rect x="0" y="41" width="240" height="139"/>
+        </area>
+    </zone>
+    
+    <zone state="disaster">
+        <area>
+            <circle x="70" y="40" radius="10"/>
+        </area>
+    </zone>
+
+    <structures>
+        <road>
+            <point x="120" y="0"/>
+            <point x="120" y="40"/>
+        </road>
+        <road>
+            <point x="80" y="40"/>
+            <point x="160" y="40"/>
+        </road>
+
+        <intersection>
+            <point x="120" y="40"/>
+        </intersection>
+
+        <obstacle>
+            <point x="160" y="40"/>
+        </obstacle>
+
+        <closure>
+            <point x="80" y="40"/>
+        </closure>
+    </structures>
+</closure-map>

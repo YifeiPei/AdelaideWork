@@ -1,0 +1,97 @@
+%%%%%%Agenda for client meeting Monday 19 August 2013. Prepared by Abdulaziz Alhulayfi 16/8/13.
+\documentclass[11pt, a4paper]{article}
+\usepackage{times}
+\usepackage{ifthen}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{setspace}
+
+%%% page parameters
+\oddsidemargin 0 cm
+\evensidemargin 0 cm
+\textwidth 16 cm
+\topmargin -2.5 cm
+\textheight 25.5 cm
+
+\renewcommand{\baselinestretch}{1.4}\normalsize
+\setlength{\parskip}{0pt}
+
+
+\begin{document}
+
+%%%mention the number, time, and venue of the meeting
+\noindent The {\em second} client meeting for Software Engineering Group 2 (PG). {\em Weekly} project meeting will be held in {\bf BCS Software Lab, Room 462, Ingkarni Wardli} at {\bf 2:30pm every Monday}.
+
+
+\vspace*{15pt}
+
+\begin{center}
+\huge \bf Agenda
+\end{center}
+
+
+
+\section*{Chair: Abdulaziz Alhulayfi \large (a1642362)}
+
+\vspace*{15pt}
+
+%%%if some students cannot make the meeting due to some reasons, their names should appear here.
+%%%\section{Apologies}
+%%%Student name and ID number
+
+%%%short presentation about the work of previous week or any milestone specified in the course.
+\section{Presentation}
+Yu Hong (a1616861) and Jianqiu Li (a1635717) will present to the client the group prototype of the robot and ask for suggestions.
+
+%%%any schedules for this meeting should go next, each with a separate section.
+%%%for example, the first meeting is about requirement elicitation, like the following.
+\section{Requirements Elicitation}
+
+\vspace*{10pt}
+
+%%%if there are more subissues, make them as subsections.
+\subsection{Elicitation of Functional Requirements}
+
+\begin{enumerate}
+
+\item How the robot will mark road closure? how should road closure look like? (Bowen Tao a1622211)   
+
+\vspace*{10pt}
+
+\item How much information should and existing map contain? Should we consider the circumstance that the existing map contains nothing? (Yifie Pei a1611648)
+
+\vspace*{10pt}
+
+\item The robot needs some AI algorithm to control the automation. What type of search algorithm is recommended and how this should be controlled automatically and manually? (Matthew Noster a1132338)  
+
+\vspace*{10pt}
+
+\item What kind of movements should the robot have? how should the robot rotate? How about the rotation angles for the robot? (Group question)
+
+\vspace*{10pt}
+
+\end{enumerate}
+ 
+
+\subsection{Elicitation of Design Requirements}
+
+\begin{enumerate}
+
+\item What will be the physical representation of the obstacles? (In the project description, they said the material of the obstacles but not the shape.) How does the robot recognise the different materials? (Abdulaziz Alhulayfi a1642362)
+
+\vspace*{10pt}
+
+\item Regarding GUI, what issues should we consider about GUI for the next meeting? (Group question)
+
+\vspace*{10pt}
+
+\end{enumerate}
+
+
+%%%finally, specifies time of next meeting
+\section{Date of Next Meeting}
+\noindent Next meeting to be held on Monday 26 August 2013 at 2:30pm.
+
+
+\end{document}

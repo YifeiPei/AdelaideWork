@@ -1,0 +1,626 @@
+package mapDataStructure;
+
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+import org.w3c.dom.Element;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+/**
+ * @author Matthew Nestor
+ * @filename RobotMap.java
+ * @package mapDataStructure
+ * @project HostSide
+ * @date 16/10/2013
+ */
+
+public class RobotMap implements Map {
+	//gui component
+	private JPanel panel;
+
+	//meta-data
+	private String metric;
+	private String creationDate;
+
+	//robot info
+	private RobotLocation robotLocation;
+
+	//map dimensions
+	private int mapX;
+	private int mapY;
+	private int mapWidth;
+	private int mapHeight;
+
+	//intersections, roads, unexplored zones, disaster zones...
+	private ArrayList<Intersection> intersections;
+	private ArrayList<Road> roads; //NB: Closures are stored in roads
+	private ArrayList<Obstacle> obstacles;
+	private ArrayList<UnexploredZone> unexploredZones;
+	private ArrayList<DisasterZone> disasterZones;
+
+	public RobotMap(){
+		//System.out.println(SwingUtilities.isEventDispatchThread());
+		intersections = new ArrayList<Intersection>();
+		roads = new ArrayList<Road>();
+		obstacles = new ArrayList<Obstacle>();
+		unexploredZones = new ArrayList<UnexploredZone>();
+		disasterZones = new ArrayList<DisasterZone>();
+		robotLocation = null;
+	}
+
+	public void setGUIComponent(JPanel jp){
+		panel = jp;
+	}
+
+	public void hasChanged(){
+		panel.repaint();
+	}
+
+	public void addObstacle(Point p){
+		obstacles.add(new Obstacle(p));
+	}
+
+	public void addRoad(Point p1, Point p2){
+		roads.add(new Road(p1, p2));
+	}
+
+	public void addIntersection(Point p){
+		intersections.add(new Intersection(p));
+	}
+	
+	public void addClosure(Point p){
+		for(Road r: roads){
+			if(isInBetween(r.getStart(), r.getEnd(), p)){
+				r.setClosed(true);
+				r.addClosure(p);
+			}
+		}
+	}
+
+	public int getWidth(){
+		return mapWidth;
+	}
+
+	public int getHeight(){
+		return mapHeight;
+	}
+
+	public ArrayList<Obstacle> getObstacles(){
+		return obstacles;
+	}
+
+	public ArrayList<Road> getRoads(){
+		return roads;
+	}
+
+	public ArrayList<Intersection> getIntersections(){
+		return intersections;
+	}
+
+	public ArrayList<UnexploredZone> getUnexploredZones(){
+		return unexploredZones;
+	}
+
+	public ArrayList<DisasterZone> getDisasterZones(){
+		return disasterZones;
+	}
+
+	public RobotLocation getRobot(){
+		return robotLocation;
+	}
+
+	public void loadMap(String s){
+		try{
+			File file = new File(s);
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			Document document = db.parse(file);
+			document.getDocumentElement().normalize();
+
+			//get root of tree and meta-data
+			NodeList rootNodeList = document.getElementsByTagName("closure-map");
+			for (int i = 0; i < rootNodeList.getLength(); i++) {
+				Node rootNode = rootNodeList.item(i);
+				//System.out.println("\nCurrent Element :" + nNode.getNodeName());
+				if (rootNode.getNodeType() == Node.ELEMENT_NODE) {
+					Element rootElement = (Element) rootNode;
+
+					//get map metric
+					metric = rootElement.getAttribute("units");
+
+					//get map attributes
+					NodeList nodeList2 = rootElement.getElementsByTagName("attribute");
+					for(int j = 0; j < nodeList2.getLength(); j++){
+						Node node2 = nodeList2.item(j);
+						if(node2.getNodeType() == Node.ELEMENT_NODE){
+							Element element2 = (Element) node2;
+							if(element2.getElementsByTagName("key").item(0).getTextContent().equals("Creation Date")){
+								creationDate = element2.getElementsByTagName("value").item(0).getTextContent();
+							}
+						}
+					}
+
+					//get boundary data
+					Node node3 = rootElement.getElementsByTagName("boundary").item(0);
+					if(node3.getNodeType() == Node.ELEMENT_NODE){
+						Element element2 = (Element) node3;
+						if(element2.getElementsByTagName("rect").item(0).getNodeType() == Node.ELEMENT_NODE){
+							Element e = (Element)element2.getElementsByTagName("rect").item(0);
+							mapX = Integer.parseInt(e.getAttribute("x"));
+							mapY = Integer.parseInt(e.getAttribute("y"));
+							mapWidth = Integer.parseInt(e.getAttribute("width"));
+							mapHeight = Integer.parseInt(e.getAttribute("height"));
+						}
+					}
+
+					//get zone data
+					nodeList2 = rootElement.getElementsByTagName("zone");
+					for(int j = 0; j < nodeList2.getLength(); j++){
+						Node node2 = nodeList2.item(j);
+						if(node2.getNodeType() == Node.ELEMENT_NODE){
+							Element element2 = (Element) node2;
+
+							//unexplored zones
+							if((element2.getAttribute("state")).equals("unexplored")){
+								if(element2.getElementsByTagName("rect").item(0).getNodeType() == Node.ELEMENT_NODE){
+									Element e = (Element)element2.getElementsByTagName("rect").item(0);
+									unexploredZones.add(new UnexploredZone(
+											new Point(Integer.parseInt(e.getAttribute("x")),Integer.parseInt(e.getAttribute("y"))),
+											Integer.parseInt(e.getAttribute("width")),
+											Integer.parseInt(e.getAttribute("height"))));
+								}
+							}
+
+							//disaster zones
+							else if((element2.getAttribute("state")).equals("disaster")){
+								if(element2.getElementsByTagName("circle").item(0).getNodeType() == Node.ELEMENT_NODE){
+									Element e = (Element)element2.getElementsByTagName("circle").item(0);
+									disasterZones.add(new DisasterZone(
+											new Point(Integer.parseInt(e.getAttribute("x")),Integer.parseInt(e.getAttribute("y"))),
+											Integer.parseInt(e.getAttribute("radius"))));
+								}
+							}
+						}
+					}
+
+					//get structure data
+					node3 = rootElement.getElementsByTagName("structures").item(0);
+					if(node3.getNodeType() == Node.ELEMENT_NODE){
+						Element element2 = (Element) node3;
+
+						//get roads
+						NodeList roadList = element2.getElementsByTagName("road");
+						for (int j = 0; j < roadList.getLength(); j++){
+							Node roadNode = roadList.item(j);
+							if (roadNode.getNodeType() == Node.ELEMENT_NODE){
+								Element roadElement = (Element) roadNode;
+								Point start = null;
+								Point end = null;
+								if(roadElement.getElementsByTagName("point").item(0).getNodeType() == Node.ELEMENT_NODE){
+									Element e = (Element)roadElement.getElementsByTagName("point").item(0);
+									start = new Point(Integer.parseInt(e.getAttribute("x")),
+											Integer.parseInt(e.getAttribute("y")));
+								}
+								if(roadElement.getElementsByTagName("point").item(1).getNodeType() == Node.ELEMENT_NODE){
+									Element e = (Element)roadElement.getElementsByTagName("point").item(1);
+									end = new Point(Integer.parseInt(e.getAttribute("x")),
+											Integer.parseInt(e.getAttribute("y")));
+								}
+								if((start!=null) && (end!=null)){
+									roads.add(new Road(start, end));
+								}
+								else
+									System.out.println("Error: Cannot initialise road: Point==null");
+							}
+						}
+
+						//get intersections
+						NodeList intersectionList = element2.getElementsByTagName("intersection");
+						for (int j = 0; j < intersectionList.getLength(); j++){
+							Node intersection = intersectionList.item(j);
+							if (intersection.getNodeType() == Node.ELEMENT_NODE){
+								Element interElement = (Element) intersection;
+								if(interElement.getElementsByTagName("point").item(0).getNodeType() == Node.ELEMENT_NODE){
+									Element e = (Element)interElement.getElementsByTagName("point").item(0);
+									intersections.add(new Intersection(new Point(Integer.parseInt(e.getAttribute("x")),
+											Integer.parseInt(e.getAttribute("y")))));
+								}
+							}
+						}
+
+						//get obstacles
+						NodeList obstacleList = element2.getElementsByTagName("obstacle");
+						for (int j = 0; j < obstacleList.getLength(); j++){
+							Node obstacle = obstacleList.item(j);
+							if (obstacle.getNodeType() == Node.ELEMENT_NODE){
+								Element obstacleElement = (Element) obstacle;
+								if(obstacleElement.getElementsByTagName("point").item(0).getNodeType() == Node.ELEMENT_NODE){
+									Element e = (Element)obstacleElement.getElementsByTagName("point").item(0);
+									obstacles.add(new Obstacle(new Point(Integer.parseInt(e.getAttribute("x")),
+											Integer.parseInt(e.getAttribute("y")))));
+								}
+							}
+						}
+
+						//get closures
+						NodeList closureList = element2.getElementsByTagName("closure");
+						for (int j = 0; j < closureList.getLength(); j++){
+							Node closure = closureList.item(j);
+							if (closure.getNodeType() == Node.ELEMENT_NODE){
+								Element closureElement = (Element) closure;
+								if(closureElement.getElementsByTagName("point").item(0).getNodeType() == Node.ELEMENT_NODE){
+									Element e = (Element)closureElement.getElementsByTagName("point").item(0);
+									Point p = new Point(Integer.parseInt(e.getAttribute("x")),
+											Integer.parseInt(e.getAttribute("y")));
+									for(Road r: roads){
+										if(isInBetween(r.getStart(), r.getEnd(), p)){
+											r.setClosed(true);
+											r.addClosure(p);
+										}
+									}
+								}
+							}
+						}
+
+					}
+
+
+					//get robot status
+					node3 = rootElement.getElementsByTagName("robot-status").item(0);
+					if(node3.getNodeType() == Node.ELEMENT_NODE){
+						Element element2 = (Element) node3;
+						int facing = -1;
+
+						//get robot attributes (supports extension of attribute types)
+						NodeList nodeList3 = rootElement.getElementsByTagName("attribute");
+						for(int j = 0; j < nodeList3.getLength(); j++){
+							Node node2 = nodeList3.item(j);
+							if(node2.getNodeType() == Node.ELEMENT_NODE){
+								Element element3 = (Element) node2;
+								if(element3.getElementsByTagName("key").item(0).getTextContent().equals("facing")){
+									facing = Integer.parseInt(element3.getElementsByTagName("value").item(0).getTextContent());
+								}
+							}
+						}
+
+						//get robot location
+						if(element2.getElementsByTagName("point").item(0).getNodeType() == Node.ELEMENT_NODE){
+							Element e = (Element)element2.getElementsByTagName("point").item(0);
+							Point p = new Point(Integer.parseInt(e.getAttribute("x")),
+									Integer.parseInt(e.getAttribute("y")));
+							boolean robotIsOnRoad = true;
+
+							//store location at intersection...
+							/*
+							for(Intersection m: intersections){
+								if(m.getLocation().equals(p)){
+									m.setContainsRobot(true);
+									m.setRobotLocation(p);
+									m.setRobotOrientation(facing);
+									robotLocation = m;
+									robotIsOnRoad = false;
+									break;
+								}
+							}
+							*/
+							//...or road
+							if(robotIsOnRoad){
+								for(Road r: roads){
+									if(isInBetween(r.getStart(), r.getEnd(), p)){
+										r.setContainsRobot(true);
+										r.setRobotLocation(p);
+										r.setRobotOrientation(facing);
+										robotLocation = r;
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+			this.divideUnexploredZones();
+
+		} catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public void saveMap(String s){
+		Document document = null;
+		Element root = null;
+		Element e1 = null;
+		Element e2 = null;
+		Element e3 = null;
+		Element e4 = null;
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		try{
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			document = db.newDocument();
+
+			//create root
+			root = document.createElement("closure-map");
+			root.setAttribute("units", metric);
+
+			//create attribute data
+			e1 = document.createElement("attribute");
+			e2 = document.createElement("key");
+			e2.appendChild(document.createTextNode("Creation Date"));
+			e1.appendChild(e2);
+			e2 = document.createElement("value");
+			e2.appendChild(document.createTextNode(creationDate));
+			e1.appendChild(e2);
+			root.appendChild(e1);
+
+			//create boundary data
+			e1 = document.createElement("boundary");
+			e2 = document.createElement("rect");
+			e2.setAttribute("x", String.valueOf(mapX));
+			e2.setAttribute("y", String.valueOf(mapY));
+			e2.setAttribute("width", String.valueOf(mapWidth));
+			e2.setAttribute("height", String.valueOf(mapHeight));
+			e1.appendChild(e2);
+			root.appendChild(e1);
+
+			//create robot status data
+			e1 = document.createElement("robot-status");
+			e2 = document.createElement("attribute");
+			e3 = document.createElement("key");
+			e3.appendChild(document.createTextNode("facing"));
+			e2.appendChild(e3);
+			e3 = document.createElement("value");
+			e3.appendChild(document.createTextNode(String.valueOf(robotLocation.getRobotOrientation())));
+			e2.appendChild(e3);
+			e1.appendChild(e2);
+			e2 = document.createElement("point");
+			e2.setAttribute("x", String.valueOf((int)robotLocation.getRobotLocation().getX()));
+			e2.setAttribute("y", String.valueOf((int)robotLocation.getRobotLocation().getY()));
+			e1.appendChild(e2);
+			root.appendChild(e1);
+
+			//create unexplored zones
+			for(UnexploredZone uz: unexploredZones){
+				e1 = document.createElement("zone");
+				e1.setAttribute("state", "unexplored");
+				e2 = document.createElement("area");
+				e3 = document.createElement("rect");
+				e3.setAttribute("x", String.valueOf((int)uz.getLocation().getX()));
+				e3.setAttribute("y", String.valueOf((int)uz.getLocation().getY()));
+				e3.setAttribute("width", String.valueOf((int)uz.getWidth()));
+				e3.setAttribute("height", String.valueOf((int)uz.getHeight()));
+				e2.appendChild(e3);
+				e1.appendChild(e2);
+				root.appendChild(e1);
+			}
+
+			//create disaster zones
+			for(DisasterZone dz: disasterZones){
+				e1 = document.createElement("zone");
+				e1.setAttribute("state", "disaster");
+				e2 = document.createElement("area");
+				e3 = document.createElement("circle");
+				e3.setAttribute("x", String.valueOf((int)dz.getLocation().getX()));
+				e3.setAttribute("y", String.valueOf((int)dz.getLocation().getY()));
+				e3.setAttribute("radius", String.valueOf((int)dz.getRadius()));
+				e2.appendChild(e3);
+				e1.appendChild(e2);
+				root.appendChild(e1);
+			}
+
+			//create structures
+			//roads
+			e1 = document.createElement("structures");
+			for(Road r: roads){
+				e2 = document.createElement("road");
+				e3 = document.createElement("point");
+				e3.setAttribute("x", String.valueOf((int)r.getStart().getX()));
+				e3.setAttribute("y", String.valueOf((int)r.getStart().getY()));
+				e2.appendChild(e3);
+				e4 = document.createElement("point");
+				e4.setAttribute("x", String.valueOf((int)r.getEnd().getX()));
+				e4.setAttribute("y", String.valueOf((int)r.getEnd().getY()));
+				e2.appendChild(e4);
+				e1.appendChild(e2);
+			}
+
+			//intersections
+			for(Intersection i: intersections){
+				e2 = document.createElement("intersection");
+				e3 = document.createElement("point");
+				e3.setAttribute("x", String.valueOf((int)i.getLocation().getX()));
+				e3.setAttribute("y", String.valueOf((int)i.getLocation().getY()));
+				e2.appendChild(e3);
+				e1.appendChild(e2);
+			}
+
+			//obstacles
+			for(Obstacle o: obstacles){
+				e2 = document.createElement("obstacle");
+				e3 = document.createElement("point");
+				e3.setAttribute("x", String.valueOf((int)o.getLocation().getX()));
+				e3.setAttribute("y", String.valueOf((int)o.getLocation().getY()));
+				e2.appendChild(e3);
+				e1.appendChild(e2);
+			}
+
+			//closures
+			for(Road r: roads){
+				if(r.isClosed()){
+					ArrayList<Closure> closures = r.getClosures();
+					for(Closure c: closures){
+						e2 = document.createElement("closure");
+						e3 = document.createElement("point");
+						e3.setAttribute("x", String.valueOf((int)c.getLocation().getX()));
+						e3.setAttribute("y", String.valueOf((int)c.getLocation().getY()));
+						e2.appendChild(e3);
+						e1.appendChild(e2);
+					}
+				}
+			}
+			root.appendChild(e1);
+
+			document.appendChild(root);
+			try{
+				Transformer t = TransformerFactory.newInstance().newTransformer();
+				t.setOutputProperty(OutputKeys.INDENT, "yes");
+				t.transform(new DOMSource(document), new StreamResult(new FileOutputStream(s)));
+			} catch(IOException ioe){
+				System.out.println(ioe.getMessage());
+			}catch (TransformerException te) {
+				System.out.println(te.getMessage());
+			}
+		}catch (ParserConfigurationException pce) {
+			System.out.println("UsersXML: Error trying to instantiate DocumentBuilder " + pce);
+		}
+
+	}
+
+	private boolean isInBetween(Point a, Point b, Point c){
+		int crossProduct = (int)(((c.getY() - a.getY()) * (b.getX() - a.getX()))
+				- ((c.getX() - a.getX()) * (b.getY() - a.getY())));
+		if(crossProduct != 0)
+			return false;
+
+		int dotProduct = (int)((c.getX() - a.getX()) * (b.getX() - a.getX())
+				+ (c.getY() - a.getY())*(b.getY() - a.getY()));
+		if(dotProduct < 0)
+			return false;
+
+		int squaredDistanceAB = (int)((b.getX() - a.getX())*(b.getX() - a.getX())
+				+ (b.getY() - a.getY())*(b.getY() - a.getY()));
+		if(dotProduct > squaredDistanceAB)
+			return false;
+
+		return true;
+	}
+
+	private void divideUnexploredZones(){
+		int w, h, w1, h1, numXPoints, numYPoints;
+		final double EXPLOREDAREA = 27.0;
+		Point tempPoint, loc;
+		UnexploredZone uz = null;
+		ArrayList<UnexploredZone> tempZones = new ArrayList<UnexploredZone>();
+
+		Iterator<UnexploredZone> itr = unexploredZones.iterator();
+		while(itr.hasNext()){
+			uz = itr.next();
+			loc = uz.getLocation();
+			w = uz.getWidth();
+			h = uz.getHeight();
+			if((w > EXPLOREDAREA) || (h > EXPLOREDAREA)){
+				numXPoints = (int)Math.ceil(w/EXPLOREDAREA);
+				numYPoints = (int)Math.ceil(h/EXPLOREDAREA);
+				//System.out.println("numXPoints = "+numXPoints);
+				//System.out.println("numYPoints = "+numYPoints);
+				h1 = h;
+				for(int i = 0; i < numYPoints; i++){
+					w1 = w;
+					for(int j = 0; j < numXPoints; j++){
+						int x = (int)(loc.getX() + w - w1);
+						int y = (int)(loc.getY() + h - h1);
+						tempPoint = new Point(x, y);
+						//System.out.println("w1 = "+w1);
+						//System.out.println("h1 = "+h1+"\n");
+						if((w1 >= EXPLOREDAREA) && (h1 >= EXPLOREDAREA))
+							tempZones.add(new UnexploredZone(tempPoint, (int)EXPLOREDAREA, (int)EXPLOREDAREA));
+						else if((w1 >= 30) && (h1 < 30))
+							tempZones.add(new UnexploredZone(tempPoint, (int)EXPLOREDAREA, h1));
+						else if((w1 < 30) && (h1 >= 30))
+							tempZones.add(new UnexploredZone(tempPoint, w1, (int)EXPLOREDAREA));
+						else if((w1 < 30) && (h1 < 30))
+							tempZones.add(new UnexploredZone(tempPoint, w1, h1));
+						if(w1 > EXPLOREDAREA)
+							w1 = w1 - (int)EXPLOREDAREA;
+					}
+					if(h1 > EXPLOREDAREA)
+						h1 = h1 - (int)EXPLOREDAREA;
+				}
+				itr.remove();
+			}
+		}
+		unexploredZones.addAll(tempZones);
+	}
+
+	public void print(){
+		System.out.println("Map metric: "+metric);
+		System.out.println("\nCreation date: "+creationDate);
+		System.out.println("\nMap dimensions:\n    mapX = "+mapX
+				+"\n    mapY = "+mapY
+				+"\n    mapWidth = "+mapWidth
+				+"\n    mapHeight = "+mapHeight);
+		System.out.println();
+		for(DisasterZone dz: disasterZones){
+			System.out.println("DisasterZone: ("+dz.getLocation().getX()
+					+", "+dz.getLocation().getY()
+					+") , radius = "+dz.getRadius());
+		}
+		System.out.println();
+		for(UnexploredZone uz: unexploredZones){
+			System.out.println("UnexploredZone: ("+uz.getLocation().getX()
+					+", "+uz.getLocation().getY()
+					+") , width = "+uz.getWidth()
+					+", height = "+uz.getHeight());
+		}
+		for(Road r: roads){
+			System.out.println("\nRoad: start = ("+r.getStart().getX()
+					+", "+r.getStart().getY()
+					+") , end = ("+r.getEnd().getX()
+					+", "+r.getEnd().getY()+")");
+
+			System.out.print("    Closure status = "+r.isClosed());
+			if(r.isClosed()){
+				ArrayList<Closure> closures = r.getClosures();
+				for(Closure c: closures){
+					System.out.println(" ("+c.getLocation().getX()+", "+c.getLocation().getY()+")");
+				}
+			}
+			else
+				System.out.println();
+
+			System.out.print("    Contains robot = "+r.containsRobot());
+			if(r.containsRobot()){
+				System.out.println(" ("+r.getRobotLocation().getX()+", "+r.getRobotLocation().getY()+")");
+			}
+			else
+				System.out.println();
+		}
+		for(Intersection i: intersections){
+			System.out.println("\nIntersection: ("+i.getLocation().getX()
+					+", "+i.getLocation().getY()+")");
+
+			System.out.print("    Contains robot = "+i.containsRobot());
+			if(i.containsRobot()){
+				System.out.println(" ("+i.getRobotLocation().getX()+", "+i.getRobotLocation().getY()+")");
+			}
+			else
+				System.out.println();
+		}
+		for(Obstacle o: obstacles){
+			System.out.println("\nObstacle: ("+o.getLocation().getX()
+					+", "+o.getLocation().getY()+")");
+		}
+
+		System.out.print("robotLocation = "+robotLocation);
+		System.out.println(", ("+robotLocation.getRobotLocation().getX()+", "
+				+robotLocation.getRobotLocation().getY()+")");
+
+	}
+}

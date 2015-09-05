@@ -1,0 +1,132 @@
+%%%%%%LIST OF DELIVERABLE MILESTONES 
+\documentclass[11pt, a4paper]{article}
+\usepackage{times}
+\usepackage{ifthen}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{setspace}
+
+%%% page parameters
+\oddsidemargin -0.0 cm
+\evensidemargin -1 cm
+\textwidth 15 cm
+\topmargin -2.5 cm
+\textheight 25.5 cm
+
+\renewcommand{\baselinestretch}{1.4}\normalsize
+\setlength{\parskip}{0pt}
+
+
+\begin{document}
+
+\vspace*{15pt}
+
+\begin{center}
+\LARGE \bf Software Engineering and Project\\
+Group 2 {\em Coding Pharaohs}\\
+MILESTONES draft for Week 9 and Week 10
+
+\end{center}
+
+\vspace*{15pt}
+
+\vspace*{15pt}
+
+\section{Milestones for Week 9}
+
+\begin{enumerate}
+\item Refer to GUI. Depicting the area explored by the robot.
+
+including 
+\begin {itemize} 
+\item representation of different structures on the map, both in existed map and detected by the robot
+\item current location of the robot and the representation of the robot
+\item the ability of saving new explored map
+\item real-time map generation, the newly explored area will be presented on the GUI in real-time
+\end {itemize}
+\item Communication
+
+including
+\begin {itemize}
+\item button on GUI to control the connection
+\item initiating the connection, message will be showed on screen, ask for confirmation and running connection
+\item show real-time message on the display of control panel of GUI
+\item ensure the real-time control with connection
+\item ability to detect the battery life and signal strength, and show them on screen
+\end {itemize}
+\item The manual control of the robot
+
+including
+\begin {itemize}
+\item moving and rotating, including move forward and backward, turn left, and turn right.
+\item ability to stop the robot
+\item road closure marking
+\end {itemize}
+\item Safety performance
+
+including
+\begin {itemize}
+\item movement speed should be an accepted constant low speed (5cm/s?)
+\end {itemize}
+\item Map site testing designed by the group.
+
+including
+\begin {itemize}
+\item A1 size map with basic features
+\end {itemize}
+
+\end{enumerate}
+
+\section{Milestones for Week 10}
+
+\begin{enumerate}
+
+\item Refer to GUI.
+
+including
+
+\begin {itemize}
+\item proper presentation of the map, a smaller sized full view on side and a bigger sized partial view in the main map panel. (this was discussed on last client meeting. This may be hard to achieve. We can eliminate this item on Week 8 if we think it's too hard to achieve)
+\item traversed path by the robot, using a different colour to display
+\end {itemize}
+
+\item AI mode of the robot
+
+including
+\begin {itemize}
+\item automatically follow the road and explore uncleared area
+\item obstacle and disaster area avoidance
+\item automatically road closure marking
+\item if stop, the robot has the ability to continue AI mode exploration
+\item the robot has the ability to go back to the starting position in AI mode (Exit)
+\end {itemize}
+
+\item Mission completion control
+
+\begin {itemize}
+\item after finishing the exploration of the whole map, the robot should wait for a while (1 minute?), and send the mission completion message to the operator asking for manual control. If the operator did nothing, the robot will automatically come back to the starting position.
+\end {itemize}
+
+\item Safety performance
+
+including
+
+\begin {itemize}
+\item collision detection. Once collision happens, the robot should stop immediately.
+\item low power performance. (10\% or 5\%?) send a warning to the operator and immediately stop, waiting for the manual control.
+\item lost of connection performance. Stop, and once connected go to manual control mode.
+\item dangerous zone. the robot should never go into the dangerous zone. once it reaches the edge of the area, it will immediately stop.
+\end {itemize}
+
+\item Map site testing designed by the group.
+
+including
+\begin {itemize}
+\item put obstacles on the map and test
+\item road closure marking features on real map
+\end {itemize}
+
+\end{enumerate}
+
+\end{document}

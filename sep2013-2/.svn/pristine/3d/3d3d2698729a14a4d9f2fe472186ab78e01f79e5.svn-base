@@ -1,0 +1,227 @@
+\documentclass[titlepage]{article}
+%\usepackage[T1]{fontenc}
+%\usepackage[utf8]{inputenc}
+%\usepackage{lmodern}
+%\usepackage{babel}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage[table]{xcolor}
+\usepackage{booktabs}
+\usepackage[hidelinks]{hyperref}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{acronym}
+\usepackage{float}
+\usepackage[font=normal, labelfont = bf]{caption}
+\usepackage{sidecap}
+\usepackage{rotating}
+\usepackage{rotfloat}
+\usepackage[ampersand]{easylist}
+\usepackage{multirow}
+
+%%% page parameters
+\oddsidemargin 1 cm
+\textwidth 14cm
+\topmargin -1 cm
+\textheight 23 cm
+
+\setcounter{tocdepth}{2}
+\title{GUI Testing Report}
+\author{Group 2   {\em Coding Pharaohs}\\ 
+\\
+Presented by Abdulaziz ALHULAYFI a1642362} 
+\date{\today}
+\begin{document}
+\maketitle
+
+\pagebreak
+
+%%INTRODUCTION
+\section{Introduction}
+This document provides manual testing of the Graphical User Interface (GUI) that is used to control the whole program of the robot. The document also shows all testing outputs of the functionalities that can be performed using the GUI such as connect, move forward, mark road closure etc.. 
+
+\section{Test Cases}
+\subsection{GUI Connection Buttons}
+\begin{tabular}{|l | p{13cm} | }
+    \hline
+    Description & Connect and disconnect buttons can establish a connection as well as disconnection        between the PC and the robot  \\ \hline
+    Priority & High  \\ \hline
+    Prerequisites & The robot is turned on and the program is run  \\ \hline
+    Test procedure &  \begin{enumerate}
+\item Run the program to open the graphical user interface.
+\item Click on the "Connect" button to establish a connection.
+\item Wait for few seconds for the PC to be connected to the Robot
+\item Click on the "Disconnect" button to disconnect the PC from the robot
+\end{enumerate}  \\ \hline
+    Expected result & PC connects/disconnects with the robot and the message "Connected" appears on the the robot LCD display and GUI connection bar.  \\ \hline
+    Actual result & PC connects/disconnects successfully with the robot  \\ \hline
+    Status & Pass  \\ 
+    \hline
+  \end{tabular}
+
+\subsection{Manual Movement Control Buttons}
+\begin{tabular}{|l | p{13cm} | }
+    \hline
+    Description & In manual mode, two movement buttons (move forward, move backward) allow robot to move according to arrows directions. Two rotating buttons change the direction of the robot accordingly.\\ \hline
+    Priority & High  \\ \hline
+    Prerequisites & The robot is turned on and PC is connected to the robot  \\ \hline
+    Test procedure &  \begin{enumerate}
+\item Connect PC to the robot
+\item Click on forward/backward pointed arrows buttons to move the robot forward or backward.
+\item Click on right/left rotating buttons to change the direction of the robot according to arrows directions.
+\end{enumerate}  \\ \hline
+    Expected result & The robot moves forward and backward and it rotates according to arrows directions  \\ \hline
+    Actual result & Robot moves and rotates appropriately  \\ \hline
+    Status & Pass  \\ 
+    \hline
+  \end{tabular}
+
+\pagebreak
+
+\subsection{File Options Menu}
+\begin{tabular}{|l | p{13cm} | }
+    \hline
+    Description & The file menu has three options: load, save and quit. These options are used to load xml map files, save cureently explored map to xml file and quit the whole program.\\ \hline
+    Priority & High  \\ \hline
+    Prerequisites & The program is run  \\ \hline
+    Test procedure &  \begin{enumerate}
+\item Run the graphical user interface
+\item Click on the file options menu
+\item Click on load and chose the xml file map from the computer
+\item Click again on the file options menu and type a name for the current map
+\item Click save to save the map to xml file
+\item Click again on the file options menu and click quit to close the program
+\end{enumerate}  \\ \hline
+    Expected result & The map can be loaded/saved and the program closes when choosing quit\\ \hline
+    Actual result & The map is successfully loaded and saved and the program is closed  \\ \hline
+    Status & Pass  \\ 
+    \hline
+  \end{tabular}
+
+\subsection{Auto Mapping Option Button}
+\begin{tabular}{|l | p{13cm} | }
+    \hline
+    Description & When choosing the automatic mapping option, the robot starts to move and explore areas on the map independently\\ \hline
+    Priority & High  \\ \hline
+    Prerequisites & The program is run and PC is connected to the robot\\ \hline
+    Test procedure &  \begin{enumerate}
+\item Run the user interface
+\item Connect PC to the robot
+\item Place the robot on the physical map
+\item Click on the "Start Auto Mapping" button
+\end{enumerate}  \\ \hline
+    Expected result & The robot runs in the automatic mode and it moves and explores the map independently\\ \hline
+    Actual result & The robot successfully explores the map automatically \\ \hline
+    Status & Pass  \\ 
+    \hline
+  \end{tabular}
+
+\subsection{Mark Road Closure Button}
+\begin{tabular}{|l | p{13cm} | }
+    \hline
+    Description & Marking road closures is a function that allows the robot to lower down the marker pen to mark road closure on the physical map. It also shows the road closure on the GUI map.\\ \hline
+    Priority & High  \\ \hline
+    Prerequisites & The program is run and PC is connected to the robot\\ \hline
+    Test procedure &  \begin{enumerate}
+\item Run the user interface
+\item Connect PC to the robot
+\item Place the robot on the physical map
+\item Chose any type of exploration (manual or automatic)
+\item Click on the "Mark Road Closure" button to mark road closure on both physical and GUI map
+\end{enumerate}  \\ \hline
+    Expected result & The robot runs lowers down its marker on the paper map and mark a closure and a closure appears on the GUI map\\ \hline
+    Actual result & Road closure has been marked successfully \\ \hline
+    Status & Pass  \\ 
+    \hline
+  \end{tabular}
+
+\subsection{Stop Button}
+\begin{tabular}{|l | p{13cm} | }
+    \hline
+    Description & Stop is a function in the user interface that stops all activities of the robot \\ \hline
+    Priority & High  \\ \hline
+    Prerequisites & The program is run and PC is connected to the robot, and the robot is moving \\ \hline
+    Test procedure &  \begin{enumerate}
+\item Run the user interface
+\item Connect PC to the robot
+\item Chose any type of exploration (manual or automatic)
+\item When robot starts moving, click on the "Stop" button
+\end{enumerate}  \\ \hline
+    Expected result & When "Stop" button is clicked the robot should be terminated\\ \hline
+    Actual result & The robot responded to the event and stoped all movements successfully \\ \hline
+    Status & Pass  \\ 
+    \hline
+  \end{tabular}
+
+\subsection{Return to Base Button}
+\begin{tabular}{|l | p{13cm} | }
+    \hline
+    Description & Return to base is a function that allows the robot to return to its starting point \\ \hline
+    Priority & Medium/High  \\ \hline
+    Prerequisites & The program is run and the robot is in the process of exploring \\ \hline
+    Test procedure &  \begin{enumerate}
+\item Run the user interface
+\item Connect PC to the robot
+\item Chose any type of exploration (manual or automatic) for the robot to move from its starting point
+\item Click on the "Return TO Base" button
+\end{enumerate}  \\ \hline
+    Expected result & The robot stops exploration and moves towards its starting\\ \hline
+    Actual result & The robot returns to the base where it started \\ \hline
+    Status & Pass  \\ 
+    \hline
+  \end{tabular}
+
+\subsection{AI View Button}
+\begin{tabular}{|l | p{13cm} | }
+    \hline
+    Description & AI view function displays the paths that the robot follows, and the spots of road closures, obstacles and intersections \\ \hline
+    Priority & Medium  \\ \hline
+    Prerequisites & The program is run and map is loaded \\ \hline
+    Test procedure &  \begin{enumerate}
+\item Run the user interface
+\item Load xml map file
+\item Click on the "AI View" button
+\end{enumerate}  \\ \hline
+    Expected result & AI view appears on the map with all details displayed \\ \hline
+    Actual result & AI view is on and with the appropriate details displayed \\ \hline
+    Status & Pass  \\ 
+    \hline
+  \end{tabular}
+
+\subsection{Robot Speed Slider}
+\begin{tabular}{|l | p{13cm} | }
+    \hline
+    Description & This function allows the robot to increase and decrease its speed \\ \hline
+    Priority & Low/Medium  \\ \hline
+    Prerequisites & The program is run and PC is connected to the robot, and the robot is moving \\ \hline
+    Test procedure &  \begin{enumerate}
+\item Run the user interface
+\item Connect PC to the robot
+\item Chose any type of exploration (manual or automatic) for the robot to move
+\item Slide the speed slider right/left to increase or decrease the robot speed
+\end{enumerate}  \\ \hline
+    Expected result & The robot movement speed changes according to selected speed \\ \hline
+    Actual result & The robot speed changes successfully \\ \hline
+    Status & Pass  \\ 
+    \hline
+  \end{tabular}
+
+\subsection{Robot Information Display}
+\begin{tabular}{|l | p{13cm} | }
+    \hline
+    Description & Information display panel shows three types of information: Distance between robot and objects in the front of it, battery level and connection status \\ \hline
+    Priority & High  \\ \hline
+    Prerequisites & The program is run and PC is connected to the robot\\ \hline
+    Test procedure &  \begin{enumerate}
+\item Run the user interface
+\item Connect PC to the robot
+\item Place the robot on the physical map
+\end{enumerate}  \\ \hline
+    Expected result & All information is displayed \\ \hline
+    Actual result & Robot information is displayed successfully \\ \hline
+    Status & Pass  \\ 
+    \hline
+  \end{tabular}
+
+
+\end{document}

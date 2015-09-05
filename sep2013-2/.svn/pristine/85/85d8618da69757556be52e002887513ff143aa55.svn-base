@@ -1,0 +1,276 @@
+\documentclass[a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{color}
+\usepackage{listings}
+\lstset{ %
+language=Java,                % choose the language of the code
+basicstyle=\footnotesize,       % the size of the fonts that are used for the code
+numbers=left,                   % where to put the line-numbers
+numberstyle=\footnotesize,      % the size of the fonts that are used for the line-numbers
+stepnumber=1,                   % the step between two line-numbers. If it is 1 each line will be numbered
+numbersep=5pt,                  % how far the line-numbers are from the code
+backgroundcolor=\color{white},  % choose the background color. You must add \usepackage{color}
+showspaces=false,               % show spaces adding particular underscores
+showstringspaces=false,         % underline spaces within strings
+showtabs=false,                 % show tabs within strings adding particular underscores
+frame=single,           % adds a frame around the code
+tabsize=2,          % sets default tabsize to 2 spaces
+captionpos=b,           % sets the caption-position to bottom
+breaklines=true,        % sets automatic line breaking
+breakatwhitespace=false,    % sets if automatic breaks should only happen at whitespace
+escapeinside={\%*}{*)}          % if you want to add a comment within your code
+}
+%%% page parameters
+\oddsidemargin -0.0 cm
+\evensidemargin -1 cm
+\textwidth 15 cm
+\topmargin -2.5 cm
+\textheight 25.5 cm
+
+\begin{document}
+\title{Testing Report}
+\author{Bowen Tao 1622211}
+\date{2/11/2013}
+\maketitle
+\section{Introduction} 
+The RobotMap file in our project plays a vital role in the procedure to transform the data between DTD map file which is defined by XML and various objects (for example Closure class). The file must read carefully from the XML file in order to decode the information stored in the file. Also, it will rebuild the data from the XML file and translate them to a format that could be passed to the objects. The different kinds of objects are based on the attributes which distinguishes from each other such as closure, obstacles, roads, disasters, intersections, and unexplored zone. When reading a valid XML file, the RobotMap will firstly load the XML file which defines map’s information and then get all of attributes. Then, by reading through the XML, it will create all the attributes in the GUI (the virtual map) based on their information which is defined by XML file. Meanwhile, it will also get the unexplored area information and simultaneously the area will be divided into several temporary blocks and add them into the UnexploredZone object so that a rectangle area with gray color will be created on the map to represent the unexplored area. And if robot wants to enter this area, it can explore the block one by one.
+
+\section{ Test Description }
+To test whether the information has been correctly transferred from the XML file, a branch of tests will be conducted by using JUnit. The following test cases have been utilized in this project to test whether the important properties such as, boundary, closure, disaster have been read correctly by the RobotMap.
+\begin{enumerate}
+\item boundaryTest: Test if the boundary gets changed during the transform process and finally all of tests are successful.
+
+\item disaterTest: Test if the disaster coordinate and size get changed during the transform process and finally all of tests are successful.
+
+\item intersectionTest: Test if the intersection coordinate and size get changed during the transform process and finally all of tests are successful.
+
+\item obstaclesTest: Test if the obstacle coordinate and size get changed during the transform process and finally all of tests are successful.
+
+\item roadsTest: Test if the road coordinate and size get changed during the transform process and finally all of tests are successful.
+
+\item unexploredZonesTest: Test if the boundary of unexplored area gets changed during the transform process and finally all of tests are successful.
+
+\item closureTest: Test if the closure coordinate and size get changed duringthe transform process and finally all of tests are successful.
+
+\item RobotTest: Test if the start point where robot stands initially gets changed during the transform process and finally all of tests are successful.
+
+\end{enumerate}
+
+\appendix
+\section{Test Code}
+The code below is taken from RobotMapTest. 
+\begin{lstlisting}
+package mapDataStructure;
+
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+
+import junit.framework.Assert;
+
+import org.junit.Before;
+import org.junit.Test;
+
+/**
+ * @author Bowen Tao
+ * @filename RobotMapTest.java
+ */
+@SuppressWarnings("deprecation")
+
+public class RobotMapTest {
+
+	RobotMap rmap;
+	
+	@Before
+	public void before(){
+		rmap = new RobotMap();
+		rmap.loadMap("src/map4.xml");
+	}
+	
+	@Test
+	public void boundaryTest(){
+		double height=rmap.getHeight();
+		double width=rmap.getWidth();
+		Assert.assertEquals(180,height,0.00001);
+		Assert.assertEquals(240, width, 0.00001);
+	}
+	
+	@Test
+	public void disaterTest() {	
+		int disaterSize =rmap.getDisasterZones().size();
+		assertEquals(2, disaterSize);
+		
+		double x =rmap.getDisasterZones().get(0).getLocation().getX();
+		double y =rmap.getDisasterZones().get(0).getLocation().getY();
+		Assert.assertEquals(70, x, 0.00001);
+		Assert.assertEquals(40, y, 0.00001);
+		
+		double x1 =rmap.getDisasterZones().get(1).getLocation().getX();
+		double y1 =rmap.getDisasterZones().get(1).getLocation().getY();
+		Assert.assertEquals(120, x1, 0.00001);
+		Assert.assertEquals(80, y1, 0.00001);
+		
+	}
+	
+	@Test
+	public void intersectionTest() {
+		int intersectionSize =rmap.getIntersections().size();
+		assertEquals(8, intersectionSize);
+		
+		double x =rmap.getIntersections().get(0).getLocation().getX();
+		double y =rmap.getIntersections().get(0).getLocation().getY();
+		Assert.assertEquals(120, x, 0.00001);
+		Assert.assertEquals(40, y, 0.00001);
+		
+		double x1 =rmap.getIntersections().get(1).getLocation().getX();
+		double y1 =rmap.getIntersections().get(1).getLocation().getY();
+		Assert.assertEquals(100, x1, 0.00001);
+		Assert.assertEquals(40, y1, 0.00001);
+		
+		double x2 =rmap.getIntersections().get(2).getLocation().getX();
+		double y2 =rmap.getIntersections().get(2).getLocation().getY();
+		Assert.assertEquals(100, x2, 0.00001);
+		Assert.assertEquals(80, y2, 0.00001);
+		
+		double x3 =rmap.getIntersections().get(3).getLocation().getX();
+		double y3 =rmap.getIntersections().get(3).getLocation().getY();
+		Assert.assertEquals(120, x3, 0.00001);
+		Assert.assertEquals(80, y3, 0.00001);
+		
+		double x4 =rmap.getIntersections().get(4).getLocation().getX();
+		double y4 =rmap.getIntersections().get(4).getLocation().getY();
+		Assert.assertEquals(160, x4, 0.00001);
+		Assert.assertEquals(40, y4, 0.00001);
+		
+		double x5 =rmap.getIntersections().get(5).getLocation().getX();
+		double y5 =rmap.getIntersections().get(5).getLocation().getY();
+		Assert.assertEquals(160, x5, 0.00001);
+		Assert.assertEquals(80, y5, 0.00001);
+		
+		double x6 =rmap.getIntersections().get(6).getLocation().getX();
+		double y6 =rmap.getIntersections().get(6).getLocation().getY();
+		Assert.assertEquals(100, x6, 0.00001);
+		Assert.assertEquals(120, y6, 0.00001);
+		
+		double x7 =rmap.getIntersections().get(7).getLocation().getX();
+		double y7 =rmap.getIntersections().get(7).getLocation().getY();
+		Assert.assertEquals(160, x7, 0.00001);
+		Assert.assertEquals(120, y7, 0.00001);
+		
+	}
+	
+	@Test
+	public void obstaclesTest() {
+		int obstacleSize =rmap.getObstacles().size();
+		assertEquals(2, obstacleSize);
+		
+		double x =rmap.getObstacles().get(0).getLocation().getX();
+		double y =rmap.getObstacles().get(0).getLocation().getY();
+		Assert.assertEquals(200, x, 0.00001);
+		Assert.assertEquals(40, y, 0.00001);
+		
+		double x1 =rmap.getObstacles().get(1).getLocation().getX();
+		double y1 =rmap.getObstacles().get(1).getLocation().getY();
+		Assert.assertEquals(100, x1, 0.00001);
+		Assert.assertEquals(105, y1, 0.00001);
+		
+	}
+	
+	@Test
+	public void roadsTest() {
+		int roadSize =rmap.getRoads().size();
+		assertEquals(6, roadSize);
+		
+		double startX =rmap.getRoads().get(0).getStart().getX();
+		double startY =rmap.getRoads().get(0).getStart().getY();
+		Assert.assertEquals(120, startX, 0.00001);
+		Assert.assertEquals(0, startY, 0.00001);
+		double endX =rmap.getRoads().get(0).getEnd().getX();
+		double endY =rmap.getRoads().get(0).getEnd().getY();
+		Assert.assertEquals(120, endX, 0.00001);
+		Assert.assertEquals(80, endY, 0.00001);
+		
+		double startX1 =rmap.getRoads().get(1).getStart().getX();
+		double startY1 =rmap.getRoads().get(1).getStart().getY();
+		Assert.assertEquals(80, startX1, 0.00001);
+		Assert.assertEquals(40, startY1, 0.00001);
+		double endX1 =rmap.getRoads().get(1).getEnd().getX();
+		double endY1 =rmap.getRoads().get(1).getEnd().getY();
+		Assert.assertEquals(200, endX1, 0.00001);
+		Assert.assertEquals(40, endY1, 0.00001);
+		
+		double startX2 =rmap.getRoads().get(2).getStart().getX();
+		double startY2 =rmap.getRoads().get(2).getStart().getY();
+		Assert.assertEquals(100, startX2, 0.00001);
+		Assert.assertEquals(40, startY2, 0.00001);
+		double endX2 =rmap.getRoads().get(2).getEnd().getX();
+		double endY2 =rmap.getRoads().get(2).getEnd().getY();
+		Assert.assertEquals(100, endX2, 0.00001);
+		Assert.assertEquals(120, endY2, 0.00001);
+		
+		double startX3 =rmap.getRoads().get(3).getStart().getX();
+		double startY3 =rmap.getRoads().get(3).getStart().getY();
+		Assert.assertEquals(160, startX3, 0.00001);
+		Assert.assertEquals(40, startY3, 0.00001);
+		double endX3 =rmap.getRoads().get(3).getEnd().getX();
+		double endY3 =rmap.getRoads().get(3).getEnd().getY();
+		Assert.assertEquals(160, endX3, 0.00001);
+		Assert.assertEquals(120, endY3, 0.00001);
+		
+		double startX4 =rmap.getRoads().get(4).getStart().getX();
+		double startY4 =rmap.getRoads().get(4).getStart().getY();
+		Assert.assertEquals(100, startX4, 0.00001);
+		Assert.assertEquals(80, startY4, 0.00001);
+		double endX4 =rmap.getRoads().get(4).getEnd().getX();
+		double endY4 =rmap.getRoads().get(4).getEnd().getY();
+		Assert.assertEquals(160, endX4, 0.00001);
+		Assert.assertEquals(80, endY4, 0.00001);
+		
+		double startX5 =rmap.getRoads().get(5).getStart().getX();
+		double startY5 =rmap.getRoads().get(5).getStart().getY();
+		Assert.assertEquals(100, startX5, 0.00001);
+		Assert.assertEquals(120, startY5, 0.00001);
+		double endX5 =rmap.getRoads().get(5).getEnd().getX();
+		double endY5 =rmap.getRoads().get(5).getEnd().getY();
+		Assert.assertEquals(160, endX5, 0.00001);
+		Assert.assertEquals(120, endY5, 0.00001);
+		
+	}
+	
+	@Test
+	public void unexploredZonesTest() {
+		double x =rmap.getUnexploredZones().get(0).getLocation().getX();
+		double y =rmap.getUnexploredZones().get(0).getLocation().getY();
+		Assert.assertEquals(0, x, 0.00001);
+		Assert.assertEquals(41, y, 0.00001);
+
+		
+	}
+	
+	@Test
+	public void closureTest() {
+		int closureSize = 0;
+		ArrayList <Road> roads = new ArrayList<Road>();
+		roads = rmap.getRoads();
+		for (Road r: roads){
+			if (r.isClosed()){
+				closureSize++;
+			}
+		}
+		assertEquals(1, closureSize);
+	}
+	
+	@Test
+	public void RobotTest(){
+		double x=rmap.getRobot().getRobotLocation().getX();
+		double y=rmap.getRobot().getRobotLocation().getY();
+		Assert.assertEquals(120, x, 0.00001);
+		Assert.assertEquals(0, y, 0.00001);
+		
+	}
+	
+}
+\end{lstlisting}
+\end{document}

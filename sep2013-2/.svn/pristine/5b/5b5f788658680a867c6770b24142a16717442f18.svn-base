@@ -1,0 +1,243 @@
+\documentclass[12pt]{article}
+
+\title{Basic Rules for SEP Group 2}
+\author{Yifei Pei}
+\date{Version 1.12 \\ August 2013}
+\usepackage{a4wide}
+\usepackage{fancybox}
+\usepackage{comment}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true
+  tabsize=3
+}
+
+\begin{document}
+\maketitle
+\section{Individual}
+
+\begin{enumerate}
+
+\item It is your own responsibility to read and learn all the resources provied by the lecturers. 
+
+If you do not learn what you are supposed to learn in the course, you may 
+\begin {itemize}
+\item not understand what we are doing for the project
+\item not catch up the steps with the rest of the group
+\item reduce your scores significantly for assessments
+\end {itemize}
+
+\item Every individual task will have a deadline. If the responsible person cannot complete it on time, please announce the group early (two days before the deadline is a preferred constraint). If the the required result is not on SVN after the deadline, the responsible person will be recognised to {\bf contribute nothing} on this task. 
+
+\emph {(Supplementary: To put what you get on SVN is a more important thing than to complete the whole task. If you really cannot finish everything before the deadline, just put what you have already done on SVN. As long as you are active in the teamwork, you will not be treated as no contribution.)}
+
+\item According to the 'Project Description', there are several tools that we have to use:
+\begin {itemize}
+\item 'XML' for the map, need to get familiar with the DTD once it's available
+\item SVN
+\item Latex
+\item JavaDoc or Doxygen for software documentation generating
+\item Apache Ant and Makefile for software configuration
+\item Editors (such as emacs) and Integrated Development Environments (such as Eclipse) that can help improve your coding process
+\item JUnit, and EMMA or Cobertuna, for software testing
+\item leJOS environment for the programming of the robot, refer to 
+\url {http://lejos.sourceforge.net/nxt/nxj/tutorial/}
+\end {itemize}
+Please start early to learn these tools, especially for {\bf SVN, Latex, and leJOS environment}.
+
+If you do not know how to use the tools, some circumstances listed above in the first section will occur.
+
+If you are facing difficulties, your group members are more than happy to help you. However, please remember that they are also learning the same things as you. A better process can be like this: 
+
+$\rightarrow$ search the Internet for information 
+
+$\rightarrow$ practice on the devices you can touch 
+
+$\rightarrow$ go to ask the SEP lecturers on forum or by person 
+
+$\rightarrow$ seek help from the school, such as \href {http://forums.cs.adelaide.edu.au/course/view.php?id=496}{Computer Science Learning Centre}.
+
+\end{enumerate}
+
+\section{Group}
+
+\subsection{Group meetings}
+
+We have a mandatory client meeting time which is {\bf 2.30pm - 3.00pm every Monday during the semester}. We also have a regular group meeting time which is \emph{2.00pm - 3.00pm every Thursday}. The venue for both of them is {\bf Ingkarni Wardli, Room 4.62}, \emph{BCS Software Lab}.
+
+For every client meeting, an agenda must be provided 24 hours before the meeting and a minutes must be summarised 24 hours after the meeting. Therefore the deadline for agenda is {\bf 2.30pm Sunday} before the client meeting and the deadline for minutes is {\bf 2.30pm Tuesday} after the client meeting. The people who are responsible for writing them are also responsible for printing them out and bringing them to the client meetings.
+
+\subsection{Client meeting host process}
+
+There are totally 10 client meetings during the semester. The host of the first client meeting was Yifei Pei. The following client meetings' hosts will be chosen depending on alphabet orders.
+
+\begin{tabular}{|c|l|c|l|}
+\hline
+NO. & Time & Roles & Name \\
+\hline
+\multirow{2}{*}{1} & \multirow{2}{*}{2.30pm - 3.00pm 12 August} & Chair & Yifei Pei \\ 
+                            &                                                                        & Secretary & Matthew Nestor \\
+\hline
+\multirow{2}{*}{2} & \multirow{2}{*}{2.30pm - 3.00pm 19 August} & Chair & Aziz \\ 
+                            &                                                                        & Secretary & Bowen Tao \\
+\hline
+\multirow{2}{*}{3} & \multirow{2}{*}{2.30pm - 3.00pm 26 August} & Chair & Bowen Tao \\ 
+                            &                                                                        & Secretary & Jianqiu Li \\
+\hline
+\multirow{2}{*}{4} & \multirow{2}{*}{2.30pm - 3.00pm 2 September} & Chair & Jianqiu Li \\ 
+                            &                                                                        & Secretary & Matthew Nestor \\
+\hline
+\multirow{2}{*}{5} & \multirow{2}{*}{2.30pm - 3.00pm 9 September} & Chair & Matthew Nestor \\ 
+                            &                                                                        & Secretary & Yifei Pei \\
+\hline
+\multirow{2}{*}{6} & \multirow{2}{*}{2.30pm - 3.00pm 16 September} & Chair & Yifei Pei \\ 
+                            &                                                                        & Secretary & Yu Hong \\
+\hline
+\multirow{2}{*}{7} & \multirow{2}{*}{2.30pm - 3.00pm 7 October} & Chair & Yu Hong \\ 
+                            &                                                                        & Secretary & Aziz \\
+\hline
+\multirow{2}{*}{8} & \multirow{2}{*}{2.30pm - 3.00pm 14 October} & Chair & Aziz \\ 
+                            &                                                                        & Secretary &  Bowen Tao\\
+\hline
+\multirow{2}{*}{9} & \multirow{2}{*}{2.30pm - 3.00pm 21 October} & Chair & Yu Hong \\ 
+                            &                                                                        & Secretary & Jianqiu Li \\
+\hline
+\multirow{2}{*}{10} & \multirow{2}{*}{2.30pm - 3.00pm 28 October} & Chair & Jianqiu Li \\ 
+                              &                                                                        & Secretary & Yu Hong \\
+\hline
+\end{tabular}
+
+\vspace*{10pt}
+
+Chair is responsible for writing agendas that are discussed by the whole group in group meetings and hosting the client meetings. Secretary is responsible for recording client meetings and summarising the client meetings to minutes.
+
+\subsection{Assignments schedule}
+
+The assignments here refer to the three deliverables before the mid break, which are Software Requirements Specification (SRS) first draft, Software Project Management Plan (SPMP) first draft, and Software Design Document (SDD) first draft.
+
+\vspace*{10pt}
+
+\begin{tabular}{|c|c|c|c|}
+\hline
+Assign & Deadline & Deadline for ind & Res people  \\
+\hline
+SRS first draft & 26 August (Week 5) & 23 August & Jianqiu, Yu \\
+\hline
+SPMP first draft & 9 September (Week 7) & 6 September & Aziz, Yifei \\
+\hline
+SDD first draft & 20 September (Week 8) & 17 September & Bowen, Matt \\
+\hline
+\end{tabular}
+
+\subsection{Programming roles}
+
+\emph {This is an initial allocation without detailed responsibilities. The detailed task allocation and software architecture will be released later.}
+
+\vspace*{10pt}
+
+{\bf GUI designer:} Yifei Pei
+
+{\bf Movement designer:} Matthew Nestor and Yu Hong
+
+{\bf Mapping programmer:} Bowen Tao and JIanqiu Li
+
+{\bf Communication programmer:} Abdulaziz Alhulayfi
+
+\section{SVN manual}
+
+\subsection{SVN convention}
+
+\begin{enumerate}
+
+\item Commitment message
+
+To get clear contribution of each member, please put meaningful message after your SVN commit command.
+
+Please use identification to specify your contribution to the commitment:
+
+\begin{itemize}
+
+\item Abdulaziz Alhulayfi: "AA"
+
+\item Bowen Tao: "BT"
+
+\item Jianqiu Li: "JL"
+
+\item Matthew Nestor: "MN"
+
+\item Yifei Pei: "YP"
+
+\item Yu Hong: "YH"
+
+\end{itemize}
+
+For example:
+
+If I made some changes to SVN, I would type: 
+
+\vspace*{10pt}
+\begin{lstlisting}
+svn commit -m "modified by YP"
+\end{lstlisting}
+\vspace*{10pt}
+
+when I commit my works.
+
+\end{enumerate}
+
+\subsection{SVN structure}
+
+Normally, the documentation manager is responsible for the management of the SVN repository. Here is a user manual for current SVN structure (Revision 55).
+
+\subsubsection{Archive}
+
+Folder contains helping documents for group members to use as a reference, such as rules for group machanism, SVN fuctioning description, helping files for group members' better learning, working examples as well as conventions for different tools.
+
+\subsubsection{Documentation}
+
+All the documentations should go here, including agendas and minutes for both the client meetings and group meetings.
+
+\subsubsection{Individuals}
+
+Individual folders for group members. One can do anything within his individual folder.
+
+\subsubsection{Memo}
+
+Folder contains files for group members to keep tracking what he did in the past week
+and what needs to do in weeks ahead. You can put your ideas inside as brainstorming exercise. You can also write memos to leave short message to your fellow members and communicate with each other. Anything you want to remember or you want to show to the whole gorup, please put it here.
+
+\subsubsection{Program}
+
+Contains the sub folders of code and test, to store source codes of our program and testing files.
+
+\subsubsection{Tags and Trunk}
+
+These two folders are for our assignments. Please {\bf Do Nothing} in these two folders.
+
+Tags folder is for written assignments. Trunk is for the configured software (after makefile) with documentations (such as user manual etc).
+
+\subsubsection{Timesheets}
+
+See \url {http://forums.cs.adelaide.edu.au/mod/forum/discuss.php?d=27082} to know information about timesheets.
+
+\end{document}
